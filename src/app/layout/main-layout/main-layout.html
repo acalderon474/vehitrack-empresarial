@@ -1,1 +1,57 @@
-<p>main-layout works!</p>
+<div class="app-shell">
+
+    <!-- Encabezado principal -->
+    <header class="app-header">
+
+        <div class="brand">
+            <span class="brand-logo" aria-hidden="true">V</span>
+
+            <div class="brand-info">
+                <h1>{{ appName }}</h1>
+                <span>Panel de operaciones</span>
+            </div>
+        </div>
+
+        <div class="header-info">
+            <span class="environment-label">
+                Prototipo
+            </span>
+        </div>
+
+    </header>
+
+    <!-- Estructura principal -->
+    <div class="app-body">
+
+        <!-- Menú lateral -->
+        <aside class="sidebar">
+
+            <div class="sidebar-header">
+                <h2>Menú principal</h2>
+            </div>
+
+            <nav class="sidebar-nav" aria-label="Navegación principal">
+
+                @for (item of menuItems; track item.route) {
+
+                <a class="nav-link" [routerLink]="item.route" routerLinkActive="active"
+                    [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">
+                    <span>{{ item.label }}</span>
+                </a>
+
+                }
+
+            </nav>
+
+        </aside>
+
+        <!-- Contenido dinámico -->
+        <main class="main-content" id="contenido-principal">
+
+            <router-outlet />
+
+        </main>
+
+    </div>
+
+</div>
