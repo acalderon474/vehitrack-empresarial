@@ -1,8 +1,15 @@
 
+export type EstadoConductor =
+    | 'disponible'
+    | 'asignado'
+    | 'descanso';
+
 export interface Conductor {
     id: string;
     nombreCompleto: string;
     categoriaLicencia: string;
-    disponible: boolean;
+    estado: EstadoConductor;
+
     vehiculoId?: string;
+    vencimientoLicencia?: string;
 }
