@@ -1,9 +1,16 @@
 
+export type EstadoVehiculo =
+    | 'disponible'
+    | 'ocupado'
+    | 'mantenimiento';
+
 export interface Vehiculo {
     id: string;
     placa: string;
     tipo: string;
     capacidadPasajeros: number;
-    disponible: boolean;
+    estado: EstadoVehiculo;
     costoOperativoPorKm?: number;
+    rendimientoKmGal?: number;
+    costoDespacho?: number;
 }
