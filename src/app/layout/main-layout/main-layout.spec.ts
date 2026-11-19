@@ -33,14 +33,14 @@ describe('MainLayout', () => {
       .toContain('Vehitrack Empresarial');
   });
 
-  it('debe mostrar las seis opciones de navegación', () => {
+  it('debe mostrar las siete opciones de navegación', () => {
     const compiled: HTMLElement = fixture.nativeElement;
 
     const enlaces = compiled.querySelectorAll(
       'nav.sidebar-nav a.nav-link'
     );
 
-    expect(enlaces.length).toBe(6);
+    expect(enlaces.length).toBe(7);
   });
 
   it('debe contener el RouterOutlet para los módulos', () => {
