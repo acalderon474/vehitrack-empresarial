@@ -45,6 +45,12 @@ export const routes: Routes = [
                         .then(m => m.Asignaciones)
             },
             {
+                path: 'recorridos',
+                loadComponent: () =>
+                    import('./features/recorridos/recorridos')
+                        .then(m => m.Recorridos)
+            },
+            {
                 path: 'reportes',
                 loadComponent: () =>
                     import('./features/reportes/reportes')

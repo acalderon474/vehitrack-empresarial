@@ -45,6 +45,10 @@ export class MainLayout {
       route: '/asignaciones'
     },
     {
+      label: 'Recorridos',
+      route: '/recorridos'
+    },
+    {
       label: 'Reportes',
       route: '/reportes'
     }

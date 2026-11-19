@@ -1,0 +1,37 @@
+
+name: Validacion continua Angular
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - chore/estabilizacion-base
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validar:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar codigo
+        uses: actions/checkout@v5
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Ejecutar pruebas automatizadas
+        run: npm test -- --watch=false
+
+      - name: Compilar Angular para produccion
+        run: npm run build -- --configuration production --base-href /vehitrack-empresarial/

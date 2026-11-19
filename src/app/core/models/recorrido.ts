@@ -20,3 +20,15 @@ export interface Recorrido {
 
     estado: 'en_curso' | 'finalizado';
 }
+/**
+ * Datos necesarios para registrar
+ * el cierre económico de un recorrido.
+ *
+ * La asignación se identifica en la URL.
+ * El backend calcula los resultados finales.
+ */
+export interface DatosCierreRecorrido {
+    kilometrosRecorridos: number;
+    gastos: GastosRecorrido;
+    observaciones?: string;
+}
