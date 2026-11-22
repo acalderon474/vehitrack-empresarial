@@ -60,7 +60,10 @@ export interface RecorridoSeguimientoDto {
 
     origen: string;
     destino: string;
+
+    vehiculo_id: string;
     placa: string;
+    conductor_id: string;
     conductor: string;
 
     estado: 'en_curso' | 'finalizado';

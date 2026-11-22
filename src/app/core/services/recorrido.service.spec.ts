@@ -73,7 +73,9 @@ describe('RecorridoService', () => {
                         solicitud_codigo: 'S-1',
                         origen: 'A',
                         destino: 'B',
+                        vehiculo_id: 'veh-1',
                         placa: 'AAA-111',
+                        conductor_id: 'con-1',
                         conductor: 'C-1',
                         estado: 'en_curso',
                         fecha_inicio: '2026-11-20T08:00:00Z',
@@ -87,6 +89,8 @@ describe('RecorridoService', () => {
 
             expect(respuesta.length).toBe(1);
             expect(respuesta[0].asignacionId).toBe('asg-1');
+            expect(respuesta[0].vehiculoId).toBe('veh-1');
+            expect(respuesta[0].conductorId).toBe('con-1');
             expect(respuesta[0].tarifa).toBe(100000);
         });
 

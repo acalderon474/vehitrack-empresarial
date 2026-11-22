@@ -1,4 +1,4 @@
-import { RecorridosPruebaStore } from './recorridos-prueba.store';
+import { PERIODO_DATOS_PRUEBA, RecorridosPruebaStore } from './recorridos-prueba.store';
 
 describe('Datos de prueba de Recorridos', () => {
 
@@ -45,15 +45,32 @@ describe('Datos de prueba de Recorridos', () => {
         });
     });
 
-    it('debe filtrar el reporte por período y vehículo', () => {
+    it('debe filtrar el reporte por período, vehículo y conductor', () => {
         expect(store.reporte({ desde: '2026-11-19', hasta: '2026-11-20' }).recorridos.length)
             .toBe(1);
 
         expect(store.reporte({
             desde: '2026-11-01',
             hasta: '2026-11-30',
-            vehiculo_id: 'QAZ-118'
-        }).recorridos.length).toBe(2);
+            vehiculo_id: 'veh-103'
+        }).recorridos.map(r => r.codigo)).toEqual(['R-7825', 'R-7819']);
+
+        expect(store.reporte({
+            desde: '2026-11-01',
+            hasta: '2026-11-30',
+            conductor_id: 'con-004'
+        }).recorridos.map(r => r.codigo)).toEqual(['R-7822', 'R-7820']);
+
+        expect(store.reporte({
+            desde: '2026-11-01',
+            hasta: '2026-11-30',
+            vehiculo_id: 'veh-103',
+            conductor_id: 'con-004'
+        }).recorridos.length).toBe(0);
+    });
+
+    it('debe cubrir todos los cierres de prueba con el período de demostración', () => {
+        expect(store.reporte(PERIODO_DATOS_PRUEBA).recorridos.length).toBe(10);
     });
 
     it('debe cerrar un recorrido en curso', () => {

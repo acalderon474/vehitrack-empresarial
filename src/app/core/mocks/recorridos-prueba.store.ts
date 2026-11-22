@@ -22,6 +22,28 @@ import type {
  * archivo simulan lo que hará el backend Go.
  */
 
+/**
+ * Período que cubren los recorridos cerrados de prueba
+ * (01 al 20 de noviembre de 2026, como en los diseños).
+ */
+export const PERIODO_DATOS_PRUEBA = {
+    desde: '2026-11-01',
+    hasta: '2026-11-20'
+} as const;
+
+const ID_VEHICULO: Record<string, string> = {
+    'KLM-203': 'veh-101',
+    'TRB-417': 'veh-102',
+    'QAZ-118': 'veh-103',
+    'HJK-552': 'veh-104',
+    'MNP-781': 'veh-105',
+    'WXS-934': 'veh-106'
+};
+
+function idConductor(codigo: string): string {
+    return codigo.replace('C-', 'con-');
+}
+
 function gastos(
     combustible: number,
     peajes: number,
@@ -66,7 +88,9 @@ function cerrado(
         solicitud_codigo: solicitud,
         origen,
         destino,
+        vehiculo_id: ID_VEHICULO[placa] ?? placa,
         placa,
+        conductor_id: idConductor(conductor),
         conductor,
         estado: 'finalizado',
         fecha_inicio: `${fecha}T08:00:00Z`,
@@ -99,7 +123,9 @@ function enCurso(
         solicitud_codigo: solicitud,
         origen,
         destino,
+        vehiculo_id: ID_VEHICULO[placa] ?? placa,
         placa,
+        conductor_id: idConductor(conductor),
         conductor,
         estado: 'en_curso',
         fecha_inicio: '2026-11-20T14:30:00Z',
@@ -207,8 +233,8 @@ export class RecorridosPruebaStore {
             return r.estado === 'finalizado' &&
                 fecha >= filtros.desde &&
                 fecha <= filtros.hasta &&
-                (filtros.vehiculo_id === undefined || r.placa === filtros.vehiculo_id) &&
-                (filtros.conductor_id === undefined || r.conductor === filtros.conductor_id);
+                (filtros.vehiculo_id === undefined || r.vehiculo_id === filtros.vehiculo_id) &&
+                (filtros.conductor_id === undefined || r.conductor_id === filtros.conductor_id);
         });
 
         const suma = (valor: (r: RecorridoSeguimientoDto) => number) =>

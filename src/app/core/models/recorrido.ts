@@ -47,7 +47,10 @@ export interface RecorridoSeguimiento {
 
     origen: string;
     destino: string;
+
+    vehiculoId: string;
     placa: string;
+    conductorId: string;
     conductor: string;
 
     estado: Recorrido['estado'];
