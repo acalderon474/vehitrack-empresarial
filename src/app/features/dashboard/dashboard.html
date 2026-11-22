@@ -97,7 +97,7 @@
       <section class="tarjeta flota">
         <div class="seccion-titulo"><div><h3>Estado de la flota</h3><p>Distribución operativa</p></div></div>
         @if (indicadores(); as datos) {
-          <div class="medidor" role="img" [attr.aria-label]="datos.vehiculos_disponibles + ' disponibles de ' + datos.vehiculos_total">
+          <div class="medidor" [style.background]="'conic-gradient(#20ad75 0 ' + disponiblesPorcentaje() + '%, #4b86e8 ' + disponiblesPorcentaje() + '% 100%)'" role="img" [attr.aria-label]="datos.vehiculos_disponibles + ' disponibles de ' + datos.vehiculos_total">
             <div class="medidor-interior"><strong>{{ datos.vehiculos_total }}</strong><span>vehículos</span></div>
           </div>
           <div class="leyenda"><span><i class="punto verde"></i>Disponibles</span><b>{{ datos.vehiculos_disponibles }}</b></div>
@@ -116,13 +116,16 @@
           <table>
             <thead><tr><th>Recorrido</th><th>Servicio</th><th>Vehículo</th><th>Margen real</th></tr></thead>
             <tbody>
-              @for (recorrido of actividadDemostracion; track recorrido.codigo) {
+              @for (recorrido of actividadDemostracion(); track recorrido.codigo) {
                 <tr><td>{{ recorrido.codigo }}</td><td>{{ recorrido.solicitud }}</td><td>{{ recorrido.vehiculo }}</td>
                   <td class="dato-positivo">{{ formatoCOP(recorrido.tarifa - recorrido.costoReal) }}</td></tr>
               }
             </tbody>
           </table>
         </div>
+        @if (actividadDemostracion().length === 0) {
+          <p class="nota">No hay recorridos de demostración en las fechas consultadas.</p>
+        }
       } @else {
         <p class="nota">El contrato VT-004/VT-005 todavía no incluye detalle de recorridos. Este panel se habilitará al integrar los datos empresariales correspondientes.</p>
       }
@@ -132,7 +135,7 @@
       <div class="seccion-titulo"><div><h3>Margen por vehículo</h3><p>Recorridos cerrados del caso académico</p></div></div>
       @if (demostracion) {
         <div class="grafico" role="img" aria-label="Comparación de márgenes reales por vehículo del caso académico">
-          @for (vehiculo of vehiculosDemostracion; track vehiculo.placa) {
+          @for (vehiculo of vehiculosDemostracion(); track vehiculo.placa) {
             <div class="columna">
               <span class="valor">{{ formatoCOP(vehiculo.margen) }}</span>
               <div class="barra" [style.height.%]="vehiculo.porcentaje"></div>

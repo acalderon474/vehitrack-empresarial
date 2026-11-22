@@ -10,7 +10,6 @@ import type {
   ResumenFinancieroDashboardDto,
 } from '../../core/dto/dashboard.dto';
 import {
-  CIERRES_DEMOSTRACION,
   CORTE_DEMOSTRACION,
   INICIO_DEMOSTRACION,
   cierresEntre,
@@ -74,8 +73,16 @@ export class Dashboard implements OnInit {
     return resumen ? variacionMargen(resumen) : 0;
   });
 
-  readonly actividadDemostracion = CIERRES_DEMOSTRACION.slice(0, 4);
-  readonly vehiculosDemostracion = margenPorVehiculoDemostracion(CIERRES_DEMOSTRACION);
+  readonly actividadDemostracion = computed(() => {
+    const consulta = this.consultaAplicada();
+    return consulta ? cierresEntre(consulta.desde, consulta.hasta).slice(0, 4) : [];
+  });
+
+  readonly vehiculosDemostracion = computed(() => {
+    const consulta = this.consultaAplicada();
+    const rango = rangoFinancieroDemostracion(consulta?.periodo ?? 'mes');
+    return margenPorVehiculoDemostracion(cierresEntre(rango.desde, rango.hasta));
+  });
   readonly rangoFinancieroDemostracion = rangoFinancieroDemostracion;
 
   ngOnInit(): void {
