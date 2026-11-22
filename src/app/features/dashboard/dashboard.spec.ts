@@ -97,7 +97,7 @@ describe('Dashboard - escenario académico', () => {
     const http = TestBed.inject(HttpTestingController);
     fixture.detectChanges();
 
-    const kpis = http.expectOne('https://api.test.local/api/v1/enterprise/dashboard/kpis?desde=2026-11-01&hasta=2026-11-20');
+    const kpis = http.expectOne('https://api.test.local/api/v1/enterprise/dashboard/kpis?desde=' + componente.desde + '&hasta=' + componente.hasta);
     const financiero = http.expectOne('https://api.test.local/api/v1/enterprise/dashboard/financial-summary?periodo=mes');
     expect(kpis.request.method).toBe('GET');
     expect(financiero.request.method).toBe('GET');
