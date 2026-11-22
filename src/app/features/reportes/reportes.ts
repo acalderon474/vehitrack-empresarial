@@ -2,10 +2,12 @@ import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 import { CopPipe } from '../../core/pipes/cop.pipe';
+import { RecorridoService } from '../../core/services/recorrido.service';
 import { ReporteService } from '../../core/services/reporte.service';
+import { PERIODO_DATOS_PRUEBA } from '../../core/mocks/recorridos-prueba.store';
 import { apiConfigurada } from '../../core/utils/respuesta-api';
 
-import type { ReporteRentabilidadDto } from '../../core/dto/reporte.dto';
+import type { FiltrosReporteDto, ReporteRentabilidadDto } from '../../core/dto/reporte.dto';
 
 interface MargenPorVehiculo {
   placa: string;
@@ -13,10 +15,50 @@ interface MargenPorVehiculo {
   porcentajeAltura: number;
 }
 
+interface OpcionFiltro {
+  id: string;
+  etiqueta: string;
+}
+
+/** Período y filtros con los que se obtuvo el reporte mostrado. */
+interface ConsultaAplicada {
+  desde: string;
+  hasta: string;
+  vehiculo?: string;
+  conductor?: string;
+}
+
 function fechaIso(fecha: Date): string {
   const mes = String(fecha.getMonth() + 1).padStart(2, '0');
   const dia = String(fecha.getDate()).padStart(2, '0');
   return `${fecha.getFullYear()}-${mes}-${dia}`;
+}
+
+/** 2026-11-01 → 01/11/2026 */
+export function formatearFecha(iso: string): string {
+  const [anio, mes, dia] = iso.split('-');
+  return `${dia}/${mes}/${anio}`;
+}
+
+/**
+ * Con datos de prueba, el período inicial cubre los cierres
+ * de demostración aunque la fecha actual sea posterior.
+ * Con API, el período inicial es el mes en curso.
+ */
+export function periodoInicial(datosDePrueba: boolean, hoy = new Date()): { desde: string; hasta: string } {
+  const hoyIso = fechaIso(hoy);
+
+  if (datosDePrueba) {
+    return {
+      desde: PERIODO_DATOS_PRUEBA.desde,
+      hasta: hoyIso > PERIODO_DATOS_PRUEBA.hasta ? hoyIso : PERIODO_DATOS_PRUEBA.hasta,
+    };
+  }
+
+  return {
+    desde: fechaIso(new Date(hoy.getFullYear(), hoy.getMonth(), 1)),
+    hasta: hoyIso,
+  };
 }
 
 @Component({
@@ -28,13 +70,20 @@ function fechaIso(fecha: Date): string {
 export class Reportes implements OnInit {
 
   private readonly servicio = inject(ReporteService);
+  private readonly recorridoServicio = inject(RecorridoService);
 
   readonly datosDePrueba = !apiConfigurada();
 
-  desde = fechaIso(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
-  hasta = fechaIso(new Date());
+  desde = periodoInicial(this.datosDePrueba).desde;
+  hasta = periodoInicial(this.datosDePrueba).hasta;
+  vehiculoId = '';
+  conductorId = '';
+
+  readonly vehiculos = signal<OpcionFiltro[]>([]);
+  readonly conductores = signal<OpcionFiltro[]>([]);
 
   readonly reporte = signal<ReporteRentabilidadDto | null>(null);
+  readonly consultaAplicada = signal<ConsultaAplicada | null>(null);
   readonly cargando = signal(false);
   readonly error = signal<string | null>(null);
 
@@ -70,8 +119,39 @@ export class Reportes implements OnInit {
       }));
   });
 
+  readonly formatearFecha = formatearFecha;
+
   ngOnInit(): void {
+    this.cargarOpcionesDeFiltro();
     this.consultar();
+  }
+
+  /** Vehículos y conductores que aparecen en los recorridos registrados. */
+  private cargarOpcionesDeFiltro(): void {
+    this.recorridoServicio.listar().subscribe({
+      next: lista => {
+        const vehiculos = new Map<string, string>();
+        const conductores = new Map<string, string>();
+
+        for (const r of lista) {
+          vehiculos.set(r.vehiculoId, r.placa);
+          conductores.set(r.conductorId, r.conductor);
+        }
+
+        const aOpciones = (mapa: Map<string, string>): OpcionFiltro[] =>
+          [...mapa.entries()]
+            .map(([id, etiqueta]) => ({ id, etiqueta }))
+            .sort((a, b) => a.etiqueta.localeCompare(b.etiqueta));
+
+        this.vehiculos.set(aOpciones(vehiculos));
+        this.conductores.set(aOpciones(conductores));
+      },
+      // Sin opciones, el reporte sigue disponible por período.
+      error: () => {
+        this.vehiculos.set([]);
+        this.conductores.set([]);
+      },
+    });
   }
 
   consultar(): void {
@@ -80,20 +160,40 @@ export class Reportes implements OnInit {
       return;
     }
 
+    const filtros: FiltrosReporteDto = {
+      desde: this.desde,
+      hasta: this.hasta,
+      ...(this.vehiculoId ? { vehiculo_id: this.vehiculoId } : {}),
+      ...(this.conductorId ? { conductor_id: this.conductorId } : {}),
+    };
+
+    const consulta: ConsultaAplicada = {
+      desde: filtros.desde,
+      hasta: filtros.hasta,
+      ...(this.vehiculoId ? { vehiculo: this.etiqueta(this.vehiculos(), this.vehiculoId) } : {}),
+      ...(this.conductorId ? { conductor: this.etiqueta(this.conductores(), this.conductorId) } : {}),
+    };
+
     this.cargando.set(true);
     this.error.set(null);
 
-    this.servicio.obtenerRentabilidad({ desde: this.desde, hasta: this.hasta })
-      .subscribe({
-        next: datos => {
-          this.reporte.set(datos);
-          this.cargando.set(false);
-        },
-        error: () => {
-          this.error.set('No fue posible consultar el reporte de rentabilidad.');
-          this.cargando.set(false);
-        },
-      });
+    this.servicio.obtenerRentabilidad(filtros).subscribe({
+      next: datos => {
+        this.reporte.set(datos);
+        this.consultaAplicada.set(consulta);
+        this.cargando.set(false);
+      },
+      error: () => {
+        this.error.set('No fue posible consultar el reporte de rentabilidad.');
+        this.cargando.set(false);
+      },
+    });
+  }
+
+  limpiarFiltros(): void {
+    this.vehiculoId = '';
+    this.conductorId = '';
+    this.consultar();
   }
 
   diferencia(margenEstimado: number, margenReal: number): number {
@@ -112,5 +212,9 @@ export class Reportes implements OnInit {
     }
 
     return 'Sin desviación';
+  }
+
+  private etiqueta(opciones: OpcionFiltro[], id: string): string {
+    return opciones.find(o => o.id === id)?.etiqueta ?? id;
   }
 }

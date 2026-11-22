@@ -11,12 +11,7 @@
 }
 
 .encabezado {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: flex-end;
-  gap: 16px;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 
   h2 { margin: 0; font-size: 26px; color: #0f3157; }
   p { margin: 6px 0 0; color: #64748b; }
@@ -27,6 +22,11 @@
   flex-wrap: wrap;
   align-items: flex-end;
   gap: 10px;
+  margin-bottom: 18px;
+  padding: 14px;
+  border-radius: 12px;
+  background: #f8fbff;
+  border: 1px solid #e2e8f0;
 
   label {
     display: flex;
@@ -37,12 +37,16 @@
     color: #334155;
   }
 
-  input {
+  input, select {
     padding: 8px 10px;
     border: 1px solid #cbd5e1;
     border-radius: 8px;
+    background: #fff;
     font: inherit;
+    font-weight: 400;
   }
+
+  select { min-width: 140px; }
 
   button {
     padding: 9px 16px;
@@ -54,6 +58,8 @@
     cursor: pointer;
 
     &:disabled { opacity: 0.6; cursor: wait; }
+
+    &.secundario { background: #e2e8f0; color: #1e293b; }
   }
 }
 

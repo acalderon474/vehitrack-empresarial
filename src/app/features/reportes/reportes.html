@@ -3,23 +3,52 @@
   <header class="encabezado">
     <div>
       <h2>Reportes y rentabilidad</h2>
-      <p>Resultados consolidados de {{ recorridos().length }} recorridos cerrados · Período {{ desde }} a {{ hasta }}</p>
+      @if (consultaAplicada(); as consulta) {
+        <p class="resumen-consulta">
+          Resultados consolidados de {{ recorridos().length }}
+          {{ recorridos().length === 1 ? 'recorrido cerrado' : 'recorridos cerrados' }} ·
+          Período {{ formatearFecha(consulta.desde) }} – {{ formatearFecha(consulta.hasta) }}
+          @if (consulta.vehiculo) { · Vehículo {{ consulta.vehiculo }} }
+          @if (consulta.conductor) { · Conductor {{ consulta.conductor }} }
+        </p>
+      }
     </div>
-
-    <form class="filtros" (ngSubmit)="consultar()">
-      <label>
-        Desde
-        <input type="date" name="desde" [(ngModel)]="desde" required>
-      </label>
-      <label>
-        Hasta
-        <input type="date" name="hasta" [(ngModel)]="hasta" required>
-      </label>
-      <button type="submit" [disabled]="cargando()">
-        {{ cargando() ? 'Consultando...' : 'Consultar' }}
-      </button>
-    </form>
   </header>
+
+  <form class="filtros" (ngSubmit)="consultar()">
+    <label>
+      Desde
+      <input type="date" name="desde" [(ngModel)]="desde" required>
+    </label>
+    <label>
+      Hasta
+      <input type="date" name="hasta" [(ngModel)]="hasta" required>
+    </label>
+    <label>
+      Vehículo
+      <select name="vehiculo" [(ngModel)]="vehiculoId">
+        <option value="">Todos</option>
+        @for (vehiculo of vehiculos(); track vehiculo.id) {
+          <option [value]="vehiculo.id">{{ vehiculo.etiqueta }}</option>
+        }
+      </select>
+    </label>
+    <label>
+      Conductor
+      <select name="conductor" [(ngModel)]="conductorId">
+        <option value="">Todos</option>
+        @for (conductor of conductores(); track conductor.id) {
+          <option [value]="conductor.id">{{ conductor.etiqueta }}</option>
+        }
+      </select>
+    </label>
+    <button type="submit" [disabled]="cargando()">
+      {{ cargando() ? 'Consultando...' : 'Consultar' }}
+    </button>
+    @if (vehiculoId || conductorId) {
+      <button type="button" class="secundario" (click)="limpiarFiltros()">Limpiar filtros</button>
+    }
+  </form>
 
   @if (error()) {
     <p class="alerta" role="alert">{{ error() }}</p>
@@ -51,7 +80,7 @@
     </div>
 
     @if (recorridos().length === 0) {
-      <p class="vacio">No hay recorridos cerrados en el período seleccionado.</p>
+      <p class="vacio">No hay recorridos cerrados con el período y los filtros seleccionados.</p>
     } @else {
 
       <div class="analisis">

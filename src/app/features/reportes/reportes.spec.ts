@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 
-import { Reportes } from './reportes';
+import { Reportes, formatearFecha, periodoInicial } from './reportes';
 import { environment } from '../../../environments/environment';
 
 describe('Reportes', () => {
@@ -10,6 +10,10 @@ describe('Reportes', () => {
   let pantalla: HTMLElement;
 
   const urlOriginal = environment.apiBaseUrl;
+
+  function resumenConsulta(): string {
+    return pantalla.querySelector('.resumen-consulta')?.textContent?.replace(/\s+/g, ' ').trim() ?? '';
+  }
 
   beforeEach(async () => {
     environment.apiBaseUrl = '';
@@ -22,11 +26,9 @@ describe('Reportes', () => {
     fixture = TestBed.createComponent(Reportes);
     component = fixture.componentInstance;
     pantalla = fixture.nativeElement;
-
-    component.desde = '2026-11-01';
-    component.hasta = '2026-11-20';
     fixture.detectChanges();
     await fixture.whenStable();
+    fixture.detectChanges();
   });
 
   afterEach(() => {
@@ -37,7 +39,10 @@ describe('Reportes', () => {
     expect(component).toBeTruthy();
   });
 
-  it('debe mostrar los totales del período', () => {
+  it('debe mostrar los datos de demostración con las fechas predeterminadas', () => {
+    expect(component.desde).toBe('2026-11-01');
+    expect(component.recorridos().length).toBe(10);
+
     const indicadores = [...pantalla.querySelectorAll('.indicador strong')]
       .map(e => e.textContent?.trim());
 
@@ -48,6 +53,60 @@ describe('Reportes', () => {
       '$652.000',
       '$639.000',
     ]);
+  });
+
+  it('debe mostrar el período realmente consultado', () => {
+    expect(resumenConsulta()).toContain('10 recorridos cerrados');
+    expect(resumenConsulta()).toContain('Período 01/11/2026 –');
+  });
+
+  it('no debe cambiar el período mostrado hasta consultar de nuevo', () => {
+    component.desde = '2026-11-19';
+    component.hasta = '2026-11-20';
+    fixture.detectChanges();
+
+    expect(resumenConsulta()).toContain('Período 01/11/2026 –');
+    expect(resumenConsulta()).toContain('10 recorridos cerrados');
+
+    component.consultar();
+    fixture.detectChanges();
+
+    expect(resumenConsulta()).toContain('1 recorrido cerrado ·');
+    expect(resumenConsulta()).toContain('Período 19/11/2026 – 20/11/2026');
+  });
+
+  it('debe ofrecer los vehículos y conductores de los recorridos', () => {
+    expect(component.vehiculos().length).toBe(6);
+    expect(component.conductores().map(c => c.etiqueta))
+      .toEqual(['C-001', 'C-002', 'C-003', 'C-004', 'C-005', 'C-006']);
+  });
+
+  it('debe filtrar el reporte por conductor', () => {
+    component.conductorId = 'con-004';
+    component.consultar();
+    fixture.detectChanges();
+
+    expect(component.recorridos().map(r => r.codigo)).toEqual(['R-7822', 'R-7820']);
+    expect(component.margenRegistrado()).toBe(165000);
+    expect(resumenConsulta()).toContain('Conductor C-004');
+  });
+
+  it('debe filtrar el reporte por vehículo', () => {
+    component.vehiculoId = 'veh-103';
+    component.consultar();
+    fixture.detectChanges();
+
+    expect(component.recorridos().map(r => r.codigo)).toEqual(['R-7825', 'R-7819']);
+    expect(resumenConsulta()).toContain('Vehículo QAZ-118');
+  });
+
+  it('debe limpiar los filtros y volver al reporte completo', () => {
+    component.conductorId = 'con-004';
+    component.consultar();
+    component.limpiarFiltros();
+
+    expect(component.recorridos().length).toBe(10);
+    expect(component.consultaAplicada()?.conductor).toBeUndefined();
   });
 
   it('debe agrupar el margen registrado por vehículo', () => {
@@ -67,20 +126,43 @@ describe('Reportes', () => {
     expect(component.interpretacion(50000, 50000)).toBe('Sin desviación');
   });
 
-  it('debe rechazar un período inválido', () => {
+  it('debe rechazar un período inválido sin cambiar el reporte mostrado', () => {
     component.desde = '2026-11-30';
     component.hasta = '2026-11-01';
     component.consultar();
 
     expect(component.error()).toContain('período válido');
+    expect(component.consultaAplicada()?.desde).toBe('2026-11-01');
   });
 
-  it('debe indicar cuando no hay recorridos en el período', () => {
+  it('debe indicar cuando no hay recorridos con los filtros', () => {
     component.desde = '2026-10-01';
     component.hasta = '2026-10-31';
     component.consultar();
     fixture.detectChanges();
 
     expect(pantalla.textContent).toContain('No hay recorridos cerrados');
+  });
+});
+
+describe('Fechas del reporte', () => {
+
+  it('debe formatear fechas ISO como día/mes/año', () => {
+    expect(formatearFecha('2026-11-01')).toBe('01/11/2026');
+  });
+
+  it('con datos de prueba debe cubrir los cierres de demostración', () => {
+    expect(periodoInicial(true, new Date(2026, 10, 10)))
+      .toEqual({ desde: '2026-11-01', hasta: '2026-11-20' });
+  });
+
+  it('con datos de prueba en una fecha posterior debe seguir incluyéndolos', () => {
+    expect(periodoInicial(true, new Date(2027, 2, 15)))
+      .toEqual({ desde: '2026-11-01', hasta: '2027-03-15' });
+  });
+
+  it('con API debe usar el mes en curso', () => {
+    expect(periodoInicial(false, new Date(2027, 2, 15)))
+      .toEqual({ desde: '2027-03-01', hasta: '2027-03-15' });
   });
 });
