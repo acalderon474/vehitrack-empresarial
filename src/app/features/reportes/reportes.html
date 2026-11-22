@@ -1,1 +1,132 @@
-<p>reportes works!</p>
+<section class="panel">
+
+  <header class="encabezado">
+    <div>
+      <h2>Reportes y rentabilidad</h2>
+      <p>Resultados consolidados de {{ recorridos().length }} recorridos cerrados · Período {{ desde }} a {{ hasta }}</p>
+    </div>
+
+    <form class="filtros" (ngSubmit)="consultar()">
+      <label>
+        Desde
+        <input type="date" name="desde" [(ngModel)]="desde" required>
+      </label>
+      <label>
+        Hasta
+        <input type="date" name="hasta" [(ngModel)]="hasta" required>
+      </label>
+      <button type="submit" [disabled]="cargando()">
+        {{ cargando() ? 'Consultando...' : 'Consultar' }}
+      </button>
+    </form>
+  </header>
+
+  @if (error()) {
+    <p class="alerta" role="alert">{{ error() }}</p>
+  }
+
+  @if (reporte(); as datos) {
+
+    <div class="indicadores">
+      <article class="indicador">
+        <span>Ingresos registrados</span>
+        <strong>{{ datos.resumen.tarifa_total | cop }}</strong>
+      </article>
+      <article class="indicador">
+        <span>Costos previstos</span>
+        <strong>{{ datos.resumen.costo_estimado_total | cop }}</strong>
+      </article>
+      <article class="indicador">
+        <span>Costos reales</span>
+        <strong>{{ datos.resumen.costo_real_total | cop }}</strong>
+      </article>
+      <article class="indicador">
+        <span>Margen previsto</span>
+        <strong>{{ margenPrevisto() | cop }}</strong>
+      </article>
+      <article class="indicador exito">
+        <span>Margen registrado</span>
+        <strong>{{ margenRegistrado() | cop }}</strong>
+      </article>
+    </div>
+
+    @if (recorridos().length === 0) {
+      <p class="vacio">No hay recorridos cerrados en el período seleccionado.</p>
+    } @else {
+
+      <div class="analisis">
+        <section class="tarjeta">
+          <h3>Rentabilidad real por vehículo</h3>
+
+          <div class="grafico" role="img" aria-label="Margen registrado por vehículo">
+            @for (vehiculo of porVehiculo(); track vehiculo.placa) {
+              <div class="columna">
+                <span class="valor">{{ vehiculo.margen | cop }}</span>
+                <div class="barra" [class.negativa]="vehiculo.margen < 0"
+                  [style.height.%]="vehiculo.porcentajeAltura"></div>
+                <span class="etiqueta-eje">{{ vehiculo.placa }}</span>
+              </div>
+            }
+          </div>
+          <p class="nota centrada">Margen registrado en COP · {{ recorridos().length }} servicios cerrados</p>
+        </section>
+
+        <section class="tarjeta">
+          <h3>Lectura económica del período</h3>
+          <dl class="lectura">
+            <div><dt>Recorridos incluidos</dt><dd>{{ recorridos().length }} cerrados</dd></div>
+            <div><dt>Sobrecosto acumulado</dt><dd>{{ datos.resumen.desviacion | cop: true }}</dd></div>
+            <div><dt>Variación del margen</dt><dd>{{ variacionMargen() | cop: true }}</dd></div>
+          </dl>
+          <p class="explicacion">
+            El margen registrado se obtiene de <strong>ingresos − costos reales</strong>.
+            Un sobrecosto positivo indica que los gastos reales superaron lo previsto.
+          </p>
+        </section>
+      </div>
+
+      <section class="tarjeta">
+        <h3>Trazabilidad del margen previsto frente al registrado</h3>
+
+        <div class="tabla-contenedor">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Recorrido</th>
+                <th scope="col">Vehículo</th>
+                <th scope="col">Margen previsto</th>
+                <th scope="col">Margen registrado</th>
+                <th scope="col">Diferencia</th>
+                <th scope="col">Interpretación</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (r of recorridos(); track r.codigo) {
+                <tr>
+                  <td>{{ r.codigo }}</td>
+                  <td>{{ r.placa }}</td>
+                  <td>{{ r.margen_estimado | cop }}</td>
+                  <td>{{ r.margen_real | cop }}</td>
+                  <td>
+                    <span class="diferencia"
+                      [class.negativa]="diferencia(r.margen_estimado, r.margen_real) < 0"
+                      [class.positiva]="diferencia(r.margen_estimado, r.margen_real) > 0">
+                      {{ diferencia(r.margen_estimado, r.margen_real) | cop: true }}
+                    </span>
+                  </td>
+                  <td>{{ interpretacion(r.margen_estimado, r.margen_real) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+    }
+  } @else if (cargando()) {
+    <p class="nota">Cargando reporte...</p>
+  }
+
+  @if (datosDePrueba) {
+    <footer class="pie">Escenario académico de referencia · Datos ilustrativos, no provenientes de una API en producción</footer>
+  }
+</section>
