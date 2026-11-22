@@ -4,8 +4,13 @@ import type {
 } from '../models/recorrido';
 
 import {
-    cierreRecorridoADto
+    cierreRecorridoADto,
+    recorridoSeguimientoDesdeDto
 } from './recorrido.adapter';
+
+import type {
+    RecorridoSeguimientoDto
+} from '../dto/recorrido.dto';
 
 describe('Adaptador de Recorridos', () => {
 
@@ -115,6 +120,80 @@ describe('Adaptador de Recorridos', () => {
             'otros_gastos',
             'observaciones'
         ].sort());
+
+    });
+
+    describe('Seguimiento de recorridos', () => {
+
+        const base: RecorridoSeguimientoDto = {
+            id: 'rec-1',
+            codigo: 'R-7826',
+            asignacion_id: 'asg-1',
+            solicitud_codigo: 'S-4588',
+            origen: 'Hotel El Prado',
+            destino: 'Centro de eventos',
+            placa: 'TRB-417',
+            conductor: 'C-002',
+            estado: 'en_curso',
+            fecha_inicio: '2026-11-20T14:30:00Z',
+            tarifa_pactada: 95000,
+            costo_estimado: 41000,
+            margen_estimado: 54000
+        };
+
+        it('debe convertir un recorrido en curso sin campos opcionales', () => {
+
+            expect(recorridoSeguimientoDesdeDto(base)).toEqual({
+                id: 'rec-1',
+                codigo: 'R-7826',
+                asignacionId: 'asg-1',
+                solicitudCodigo: 'S-4588',
+                origen: 'Hotel El Prado',
+                destino: 'Centro de eventos',
+                placa: 'TRB-417',
+                conductor: 'C-002',
+                estado: 'en_curso',
+                fechaInicio: '2026-11-20T14:30:00Z',
+                tarifa: 95000,
+                costoEstimado: 41000,
+                margenEstimado: 54000
+            });
+
+        });
+
+        it('debe convertir los gastos de un recorrido cerrado', () => {
+
+            const resultado = recorridoSeguimientoDesdeDto({
+                ...base,
+                estado: 'finalizado',
+                fecha_fin: '2026-11-20T18:00:00Z',
+                km_reales: 25.2,
+                costo_real: 56000,
+                desviacion_costos: 5000,
+                margen_real: 64000,
+                gastos: {
+                    costo_combustible: 24000,
+                    costo_peajes: 8000,
+                    costo_mantenimiento: 5000,
+                    costo_conductor: 18000,
+                    otros_gastos: 1000
+                }
+            });
+
+            expect(resultado.fechaFin).toBe('2026-11-20T18:00:00Z');
+            expect(resultado.kilometrosReales).toBe(25.2);
+            expect(resultado.costoReal).toBe(56000);
+            expect(resultado.desviacionCostos).toBe(5000);
+            expect(resultado.margenReal).toBe(64000);
+            expect(resultado.gastos).toEqual({
+                combustible: 24000,
+                peajes: 8000,
+                mantenimiento: 5000,
+                conductor: 18000,
+                otros: 1000
+            });
+
+        });
 
     });
 

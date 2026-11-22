@@ -32,3 +32,35 @@ export interface DatosCierreRecorrido {
     gastos: GastosRecorrido;
     observaciones?: string;
 }
+/**
+ * Vista de seguimiento de un recorrido
+ * (tabla de Recorridos y cierre operativo).
+ *
+ * Los valores económicos provienen del backend;
+ * Angular solo los presenta.
+ */
+export interface RecorridoSeguimiento {
+    id: string;
+    codigo: string;
+    asignacionId: string;
+    solicitudCodigo: string;
+
+    origen: string;
+    destino: string;
+    placa: string;
+    conductor: string;
+
+    estado: Recorrido['estado'];
+    fechaInicio: string;
+    fechaFin?: string;
+
+    tarifa: number;
+    costoEstimado: number;
+    margenEstimado: number;
+
+    kilometrosReales?: number;
+    costoReal?: number;
+    desviacionCostos?: number;
+    margenReal?: number;
+    gastos?: GastosRecorrido;
+}
