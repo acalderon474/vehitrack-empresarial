@@ -5,9 +5,7 @@
       <h2>Resumen operativo</h2>
       <p class="subtitulo">Consulta de flota, servicios e indicadores económicos.</p>
     </div>
-    <span class="etiqueta" [class.etiqueta-demo]="demostracion">
-      {{ demostracion ? 'Escenario académico · datos ilustrativos' : 'API empresarial configurada' }}
-    </span>
+    
   </header>
 
   <form class="filtros" (ngSubmit)="consultar()">
@@ -149,10 +147,4 @@
     </section>
   </div>
 
-  @if (demostracion) {
-    <footer class="advertencia">
-      <strong>Modo demostración.</strong> Los datos corresponden al escenario académico de Operadora Caribe Turístico S.A.S.
-      No provienen de una API empresarial ni representan operaciones en tiempo real.
-    </footer>
-  }
 </section>

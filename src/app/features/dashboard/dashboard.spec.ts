@@ -63,7 +63,7 @@ describe('Dashboard - escenario académico', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.textContent).toContain('Resumen operativo');
-    expect(fixture.nativeElement.textContent).toContain('Escenario académico');
+    expect(fixture.nativeElement.textContent).toContain('Corte de los datos ilustrativos');
     expect(fixture.nativeElement.textContent).toContain('10');
     expect(fixture.nativeElement.textContent).toContain('639.000');
     expect(fixture.nativeElement.textContent).not.toContain('dashboard works!');
