@@ -1,0 +1,129 @@
+// Paleta tomada del diseño de Asignaciones
+$azul-oscuro: #0f3157;
+$gris: #64748b;
+
+:host {
+    display: block;
+}
+
+.tarjeta {
+    height: 100%;
+    padding: 1rem 1.15rem;
+    border: 2px solid #cfe0fb;
+    border-radius: 1rem;
+    background: #eef4ff;
+    box-sizing: border-box;
+}
+
+.tarjeta.recomendada {
+    border-color: #a6e3c8;
+    background: #e6f9f0;
+}
+
+.tarjeta.elegida,
+.tarjeta.confirmada {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.encabezado {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 0.4rem 0.75rem;
+}
+
+h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    color: $azul-oscuro;
+}
+
+.insignia {
+    padding: 0.2rem 0.7rem;
+    border-radius: 999px;
+    background: #dbe8ff;
+    color: #1e40af;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.recomendada .insignia {
+    background: #c9f1de;
+    color: #067647;
+}
+
+.detalle {
+    margin: 0.4rem 0 1rem;
+    color: $gris;
+    font-size: 0.92rem;
+}
+
+.etiqueta {
+    margin: 0;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: $gris;
+}
+
+.costo {
+    margin: 0.15rem 0 0.35rem;
+    font-size: 2rem;
+    font-weight: 700;
+    color: $azul-oscuro;
+}
+
+.recomendada .costo {
+    color: #067647;
+}
+
+.margen {
+    margin: 0;
+    font-weight: 700;
+    color: $azul-oscuro;
+}
+
+.margen.negativo {
+    color: #b3261e;
+}
+
+.porcentaje {
+    font-weight: 400;
+    color: $gris;
+    white-space: nowrap;
+}
+
+.elegido-marca {
+    margin: 0.6rem 0 0;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #1e40af;
+}
+
+.boton {
+    margin-top: 0.9rem;
+    padding: 0.5rem 1rem;
+    border: 1px solid #2563eb;
+    border-radius: 0.6rem;
+    background: #fff;
+    color: #1e40af;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.boton[aria-pressed='true'] {
+    background: #2563eb;
+    color: #fff;
+}
+
+.boton:focus-visible {
+    outline: 2px solid #2563eb;
+    outline-offset: 2px;
+}

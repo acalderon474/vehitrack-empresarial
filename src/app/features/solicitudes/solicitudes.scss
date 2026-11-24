@@ -1,0 +1,61 @@
+// Paleta tomada del diseño de Solicitudes
+$azul-oscuro: #0f3157;
+$azul: #2563eb;
+$gris: #64748b;
+$borde: #dbe4f0;
+
+:host {
+    display: block;
+}
+
+.solicitudes {
+    padding: 1.4rem 1.5rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 1.1rem;
+    background: #fff;
+    box-shadow: 0 8px 24px rgba(15, 49, 87, 0.06);
+}
+
+.cabecera {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.1rem;
+}
+
+h1 {
+    margin: 0 0 0.2rem;
+    font-size: 1.9rem;
+    color: $azul-oscuro;
+}
+
+.cabecera p {
+    margin: 0;
+    color: $gris;
+}
+
+.boton {
+    padding: 0.55rem 1.1rem;
+    border: 0;
+    border-radius: 0.6rem;
+    background: $azul;
+    color: #fff;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.boton:focus-visible {
+    outline: 2px solid $azul;
+    outline-offset: 2px;
+}
+
+.panel {
+    margin-bottom: 1.1rem;
+    padding: 1rem 1.15rem;
+    border: 1px solid $borde;
+    border-radius: 0.9rem;
+    background: #f8fbff;
+}

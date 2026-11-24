@@ -1,0 +1,41 @@
+<article
+  class="tarjeta"
+  [class.recomendada]="alternativa().recomendado"
+  [class.elegida]="elegida()"
+  [class.confirmada]="confirmada()">
+
+  <header class="encabezado">
+    <h3>Vehículo {{ letra() }} · {{ alternativa().codigoVehiculo ?? alternativa().placa }}</h3>
+    <span class="insignia">{{ alternativa().recomendado ? 'Recomendado' : 'Alternativa' }}</span>
+  </header>
+
+  <p class="detalle">
+    Placa {{ alternativa().placa }}
+    @if (alternativa().capacidadPasajeros !== undefined) {
+      · {{ alternativa().capacidadPasajeros }} puestos
+    }
+    · {{ formatoNumero(alternativa().kmVacios) }} km vacíos
+  </p>
+
+  <p class="etiqueta">Costo total previsto</p>
+  <p class="costo">{{ formatoCop(alternativa().costoEstimado) }}</p>
+
+  <p class="margen" [class.negativo]="alternativa().margenProyectado < 0">
+    Margen estimado: {{ formatoCop(alternativa().margenProyectado) }}
+    <span class="porcentaje">({{ formatoNumero(alternativa().porcentajeMargen, 2) }} %)</span>
+  </p>
+
+  @if (confirmada()) {
+    <p class="elegido-marca">Vehículo confirmado</p>
+  }
+
+  @if (modo() === 'elegir') {
+    <button
+      type="button"
+      class="boton"
+      [attr.aria-pressed]="elegida()"
+      (click)="elegir.emit(alternativa().vehiculoId)">
+      {{ elegida() ? 'Vehículo elegido' : 'Elegir este vehículo' }}
+    </button>
+  }
+</article>
