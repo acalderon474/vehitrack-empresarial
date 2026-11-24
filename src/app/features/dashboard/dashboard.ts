@@ -1,8 +1,13 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { forkJoin, of } from 'rxjs';
+import { catchError, forkJoin, of } from 'rxjs';
 
 import { DashboardService } from '../../core/services/dashboard.service';
+import { RecorridoService } from '../../core/services/recorrido.service';
+import { ReporteService } from '../../core/services/reporte.service';
+
+import type { RecorridoSeguimiento } from '../../core/models/recorrido';
+import type { ReporteRentabilidadDto } from '../../core/dto/reporte.dto';
 import { environment } from '../../../environments/environment';
 import type {
   IndicadoresDashboardDto,
@@ -40,6 +45,8 @@ export function variacionMargen(resumen: ResumenFinancieroDashboardDto): number 
 })
 export class Dashboard implements OnInit {
   private readonly servicio = inject(DashboardService);
+  private readonly servicioRecorridos = inject(RecorridoService);
+  private readonly servicioReportes = inject(ReporteService);
 
   readonly demostracion = environment.modoDemostracion;
   readonly fechaCorte = CORTE_DEMOSTRACION;
@@ -60,6 +67,17 @@ export class Dashboard implements OnInit {
   readonly consultaAplicada = signal<{ desde: string; hasta: string; periodo: PeriodoFinanciero } | null>(null);
   readonly cargando = signal(false);
   readonly error = signal<string | null>(null);
+  readonly actividadApi = signal<RecorridoSeguimiento[]>([]);
+
+readonly margenesApi = signal<
+  { placa: string; margen: number; porcentaje: number }[]
+>([]);
+
+readonly cargandoComplementos = signal(false);
+readonly errorActividad = signal<string | null>(null);
+readonly errorMargen = signal<string | null>(null);
+
+private numeroConsulta = 0;
 
   readonly disponiblesPorcentaje = computed(() => {
     const datos = this.indicadores();
@@ -119,6 +137,103 @@ export class Dashboard implements OnInit {
         this.finanzas.set(finanzas);
         this.consultaAplicada.set(consulta);
         this.cargando.set(false);
+
+
+    // El escenario ilustrativo conserva su comportamiento.
+    if (this.demostracion) {
+      return;
+    }
+
+    const consultaActual = ++this.numeroConsulta;
+
+    this.actividadApi.set([]);
+    this.margenesApi.set([]);
+    this.errorActividad.set(null);
+    this.errorMargen.set(null);
+    this.cargandoComplementos.set(true);
+
+    // VT-014 y VT-015: consultas independientes de los KPIs.
+    forkJoin({
+      recorridos: this.servicioRecorridos.listar().pipe(
+        catchError(() => {
+          if (consultaActual === this.numeroConsulta) {
+            this.errorActividad.set(
+              'No fue posible consultar los recorridos.'
+            );
+          }
+          return of([] as RecorridoSeguimiento[]);
+        })
+      ),
+
+      reporte: this.servicioReportes.obtenerRentabilidad({
+        desde: consulta.desde,
+        hasta: consulta.hasta
+      }).pipe(
+        catchError(() => {
+          if (consultaActual === this.numeroConsulta) {
+            this.errorMargen.set(
+              'No fue posible consultar la rentabilidad.'
+            );
+          }
+          return of(null as ReporteRentabilidadDto | null);
+        })
+      )
+    }).subscribe({
+      next: ({ recorridos, reporte }) => {
+        // Evitar que una consulta anterior reemplace la reciente.
+        if (consultaActual !== this.numeroConsulta) {
+          return;
+        }
+
+        const recientes = recorridos
+          .filter(r =>
+            r.estado === 'finalizado' &&
+            !!r.fechaFin &&
+            r.fechaFin.slice(0, 10) >= consulta.desde &&
+            r.fechaFin.slice(0, 10) <= consulta.hasta
+          )
+          .sort((a, b) =>
+            (b.fechaFin ?? '').localeCompare(a.fechaFin ?? '')
+          )
+          .slice(0, 4);
+
+        this.actividadApi.set(recientes);
+
+        // Agrupar márgenes reales por placa.
+        const acumulados = new Map<string, number>();
+
+        for (const r of reporte?.recorridos ?? []) {
+          if (!r.placa || !Number.isFinite(r.margen_real)) {
+            continue;
+          }
+
+          acumulados.set(
+            r.placa,
+            (acumulados.get(r.placa) ?? 0) + r.margen_real
+          );
+        }
+
+        const maximo = Math.max(
+          1,
+          ...[...acumulados.values()].map(Math.abs)
+        );
+
+        const margenes = [...acumulados.entries()]
+          .sort(([a], [b]) => a.localeCompare(b))
+          .map(([placa, margen]) => ({
+            placa,
+            margen,
+            porcentaje: Math.max(
+              3,
+              Math.round(Math.abs(margen) / maximo * 100)
+            )
+          }));
+
+        this.margenesApi.set(margenes);
+        this.cargandoComplementos.set(false);
+      }
+    });
+
       },
       error: () => {
         this.error.set('No fue posible consultar el Dashboard. Compruebe la conexión con la API empresarial.');

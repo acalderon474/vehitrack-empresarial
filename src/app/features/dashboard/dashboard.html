@@ -5,7 +5,7 @@
       <h2>Resumen operativo</h2>
       <p class="subtitulo">Consulta de flota, servicios e indicadores económicos.</p>
     </div>
-    
+
   </header>
 
   <form class="filtros" (ngSubmit)="consultar()">
@@ -18,7 +18,7 @@
     <label>Resumen financiero
       <select name="periodo" [(ngModel)]="periodo">
         @for (opcion of periodos; track opcion.valor) {
-          <option [ngValue]="opcion.valor">{{ opcion.nombre }}</option>
+        <option [ngValue]="opcion.valor">{{ opcion.nombre }}</option>
         }
       </select>
     </label>
@@ -28,122 +28,214 @@
   </form>
 
   @if (error()) {
-    <p class="mensaje-error" role="alert">{{ error() }}</p>
+  <p class="mensaje-error" role="alert">{{ error() }}</p>
   }
 
   @if (consultaAplicada(); as consulta) {
-    <p class="contexto">
-      Indicadores operativos: {{ fechaColombia(consulta.desde) }} – {{ fechaColombia(consulta.hasta) }} ·
-      Resumen financiero: {{ consulta.periodo }}
-      @if (demostracion) {
-        · Corte de los datos ilustrativos: {{ fechaColombia(fechaCorte) }}
-      }
-    </p>
+  <p class="contexto">
+    Indicadores operativos: {{ fechaColombia(consulta.desde) }} – {{ fechaColombia(consulta.hasta) }} ·
+    Resumen financiero: {{ consulta.periodo }}
+    @if (demostracion) {
+    · Corte de los datos ilustrativos: {{ fechaColombia(fechaCorte) }}
+    }
+  </p>
   }
 
   @if (indicadores(); as datos) {
-    <div class="kpis">
-      <article class="kpi">
-        <span>Flota registrada</span>
-        <strong>{{ datos.vehiculos_total }}</strong>
-        <small>Vehículos de la empresa</small>
-      </article>
-      <article class="kpi kpi-verde">
-        <span>Disponibles</span>
-        <strong>{{ datos.vehiculos_disponibles }}</strong>
-        <small>{{ disponiblesPorcentaje() }} % de la flota</small>
-      </article>
-      <article class="kpi kpi-azul">
-        <span>En servicio</span>
-        <strong>{{ datos.vehiculos_en_servicio }}</strong>
-        <small>Vehículos ocupados</small>
-      </article>
-      <article class="kpi kpi-amarillo">
-        <span>Solicitudes pendientes</span>
-        <strong>{{ datos.solicitudes_pendientes }}</strong>
-        <small>Por coordinar</small>
-      </article>
-      <article class="kpi kpi-gris">
-        <span>Recorridos cerrados</span>
-        <strong>{{ datos.recorridos_finalizados }}</strong>
-        <small>En el período consultado</small>
-      </article>
-    </div>
+  <div class="kpis">
+    <article class="kpi">
+      <span>Flota registrada</span>
+      <strong>{{ datos.vehiculos_total }}</strong>
+      <small>Vehículos de la empresa</small>
+    </article>
+    <article class="kpi kpi-verde">
+      <span>Disponibles</span>
+      <strong>{{ datos.vehiculos_disponibles }}</strong>
+      <small>{{ disponiblesPorcentaje() }} % de la flota</small>
+    </article>
+    <article class="kpi kpi-azul">
+      <span>En servicio</span>
+      <strong>{{ datos.vehiculos_en_servicio }}</strong>
+      <small>Vehículos ocupados</small>
+    </article>
+    <article class="kpi kpi-amarillo">
+      <span>Solicitudes pendientes</span>
+      <strong>{{ datos.solicitudes_pendientes }}</strong>
+      <small>Por coordinar</small>
+    </article>
+    <article class="kpi kpi-gris">
+      <span>Recorridos cerrados</span>
+      <strong>{{ datos.recorridos_finalizados }}</strong>
+      <small>En el período consultado</small>
+    </article>
+  </div>
   }
 
   @if (finanzas(); as resumen) {
-    <div class="paneles">
-      <section class="tarjeta finanzas">
-        <div class="seccion-titulo">
-          <div>
-            <h3>Resumen financiero</h3>
-            <p>Importes en pesos colombianos (COP)</p>
-          </div>
-          <span class="indicador-periodo">{{ consultaAplicada()?.periodo }}</span>
+  <div class="paneles">
+    <section class="tarjeta finanzas">
+      <div class="seccion-titulo">
+        <div>
+          <h3>Resumen financiero</h3>
+          <p>Importes en pesos colombianos (COP)</p>
         </div>
-        <div class="cuadricula-finanzas">
-          <article><span>Ingresos registrados</span><strong>{{ formatoCOP(resumen.ingreso_total) }}</strong></article>
-          <article><span>Costos previstos</span><strong>{{ formatoCOP(resumen.costo_estimado) }}</strong></article>
-          <article><span>Costos reales</span><strong>{{ formatoCOP(resumen.costo_real) }}</strong></article>
-          <article><span>Margen previsto</span><strong>{{ formatoCOP(resumen.margen_estimado) }}</strong></article>
-          <article class="real"><span>Margen registrado</span><strong>{{ formatoCOP(resumen.margen_real) }}</strong></article>
-          <article [class.variacion-negativa]="variacion() < 0"><span>Variación del margen</span><strong>{{ formatoCOP(variacion()) }}</strong></article>
-        </div>
-        <p class="nota">El margen se calcula como ingreso menos costo. Una variación negativa significa menor margen real frente al previsto.</p>
-      </section>
+        <span class="indicador-periodo">{{ consultaAplicada()?.periodo }}</span>
+      </div>
+      <div class="cuadricula-finanzas">
+        <article><span>Ingresos registrados</span><strong>{{ formatoCOP(resumen.ingreso_total) }}</strong></article>
+        <article><span>Costos previstos</span><strong>{{ formatoCOP(resumen.costo_estimado) }}</strong></article>
+        <article><span>Costos reales</span><strong>{{ formatoCOP(resumen.costo_real) }}</strong></article>
+        <article><span>Margen previsto</span><strong>{{ formatoCOP(resumen.margen_estimado) }}</strong></article>
+        <article class="real"><span>Margen registrado</span><strong>{{ formatoCOP(resumen.margen_real) }}</strong>
+        </article>
+        <article [class.variacion-negativa]="variacion() < 0"><span>Variación del margen</span><strong>{{
+            formatoCOP(variacion()) }}</strong></article>
+      </div>
+      <p class="nota">El margen se calcula como ingreso menos costo. Una variación negativa significa menor margen real
+        frente al previsto.</p>
+    </section>
 
-      <section class="tarjeta flota">
-        <div class="seccion-titulo"><div><h3>Estado de la flota</h3><p>Distribución operativa</p></div></div>
-        @if (indicadores(); as datos) {
-          <div class="medidor" [style.background]="'conic-gradient(#20ad75 0 ' + disponiblesPorcentaje() + '%, #4b86e8 ' + disponiblesPorcentaje() + '% 100%)'" role="img" [attr.aria-label]="datos.vehiculos_disponibles + ' disponibles de ' + datos.vehiculos_total">
-            <div class="medidor-interior"><strong>{{ datos.vehiculos_total }}</strong><span>vehículos</span></div>
-          </div>
-          <div class="leyenda"><span><i class="punto verde"></i>Disponibles</span><b>{{ datos.vehiculos_disponibles }}</b></div>
-          <div class="leyenda"><span><i class="punto azul"></i>En servicio</span><b>{{ datos.vehiculos_en_servicio }}</b></div>
-          <p class="nota">El Dashboard muestra el estado reportado por la fuente consultada.</p>
-        }
-      </section>
-    </div>
+    <section class="tarjeta flota">
+      <div class="seccion-titulo">
+        <div>
+          <h3>Estado de la flota</h3>
+          <p>Distribución operativa</p>
+        </div>
+      </div>
+      @if (indicadores(); as datos) {
+      <div class="medidor"
+        [style.background]="'conic-gradient(#20ad75 0 ' + disponiblesPorcentaje() + '%, #4b86e8 ' + disponiblesPorcentaje() + '% 100%)'"
+        role="img" [attr.aria-label]="datos.vehiculos_disponibles + ' disponibles de ' + datos.vehiculos_total">
+        <div class="medidor-interior"><strong>{{ datos.vehiculos_total }}</strong><span>vehículos</span></div>
+      </div>
+      <div class="leyenda"><span><i class="punto verde"></i>Disponibles</span><b>{{ datos.vehiculos_disponibles }}</b>
+      </div>
+      <div class="leyenda"><span><i class="punto azul"></i>En servicio</span><b>{{ datos.vehiculos_en_servicio }}</b>
+      </div>
+      <p class="nota">El Dashboard muestra el estado reportado por la fuente consultada.</p>
+      }
+    </section>
+  </div>
   }
 
   <div class="paneles secundarios">
     <section class="tarjeta">
-      <div class="seccion-titulo"><div><h3>Actividad operativa reciente</h3><p>Últimos recorridos cerrados</p></div></div>
-      @if (demostracion) {
-        <div class="tabla-responsive">
-          <table>
-            <thead><tr><th>Recorrido</th><th>Servicio</th><th>Vehículo</th><th>Margen real</th></tr></thead>
-            <tbody>
-              @for (recorrido of actividadDemostracion(); track recorrido.codigo) {
-                <tr><td>{{ recorrido.codigo }}</td><td>{{ recorrido.solicitud }}</td><td>{{ recorrido.vehiculo }}</td>
-                  <td class="dato-positivo">{{ formatoCOP(recorrido.tarifa - recorrido.costoReal) }}</td></tr>
-              }
-            </tbody>
-          </table>
+      <div class="seccion-titulo">
+        <div>
+          <h3>Actividad operativa reciente</h3>
+          <p>Últimos recorridos cerrados</p>
         </div>
-        @if (actividadDemostracion().length === 0) {
-          <p class="nota">No hay recorridos de demostración en las fechas consultadas.</p>
-        }
-      } @else {
-        <p class="nota">El contrato VT-004/VT-005 todavía no incluye detalle de recorridos. Este panel se habilitará al integrar los datos empresariales correspondientes.</p>
+      </div>
+      @if (demostracion) {
+      <div class="tabla-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>Recorrido</th>
+              <th>Servicio</th>
+              <th>Vehículo</th>
+              <th>Margen real</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (recorrido of actividadDemostracion(); track recorrido.codigo) {
+            <tr>
+              <td>{{ recorrido.codigo }}</td>
+              <td>{{ recorrido.solicitud }}</td>
+              <td>{{ recorrido.vehiculo }}</td>
+              <td class="dato-positivo">{{ formatoCOP(recorrido.tarifa - recorrido.costoReal) }}</td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      @if (actividadDemostracion().length === 0) {
+      <p class="nota">No hay recorridos de demostración en las fechas consultadas.</p>
       }
+
+      } @else if (cargandoComplementos()) {
+      <p class="nota">Consultando recorridos...</p>
+      } @else if (errorActividad()) {
+      <p class="nota" role="alert">{{ errorActividad() }}</p>
+      } @else if (actividadApi().length > 0) {
+      <div class="tabla-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>Recorrido</th>
+              <th>Solicitud</th>
+              <th>Vehículo</th>
+              <th>Margen real</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (r of actividadApi(); track r.id) {
+            <tr>
+              <td>{{ r.codigo }}</td>
+              <td>{{ r.solicitudCodigo }}</td>
+              <td>{{ r.placa }}</td>
+              <td class="dato-positivo">
+                @if (r.margenReal != null) {
+                {{ formatoCOP(r.margenReal) }}
+                } @else {
+                —
+                }
+              </td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      } @else {
+      <p class="nota">
+        No hay recorridos finalizados en el período consultado.
+      </p>
+      }
+
     </section>
 
     <section class="tarjeta">
-      <div class="seccion-titulo"><div><h3>Margen por vehículo</h3><p>Recorridos cerrados del caso académico</p></div></div>
-      @if (demostracion) {
-        <div class="grafico" role="img" aria-label="Comparación de márgenes reales por vehículo del caso académico">
-          @for (vehiculo of vehiculosDemostracion(); track vehiculo.placa) {
-            <div class="columna">
-              <span class="valor">{{ formatoCOP(vehiculo.margen) }}</span>
-              <div class="barra" [style.height.%]="vehiculo.porcentaje"></div>
-              <span class="placa">{{ vehiculo.placa }}</span>
-            </div>
-          }
+      <div class="seccion-titulo">
+        <div>
+          <h3>Margen por vehículo</h3>
+          <p>Rentabilidad de los recorridos del período consultado</p>
         </div>
+      </div>
+      @if (demostracion) {
+      <div class="grafico" role="img" aria-label="Comparación de márgenes reales por vehículo del caso académico">
+        @for (vehiculo of vehiculosDemostracion(); track vehiculo.placa) {
+        <div class="columna">
+          <span class="valor">{{ formatoCOP(vehiculo.margen) }}</span>
+          <div class="barra" [style.height.%]="vehiculo.porcentaje"></div>
+          <span class="placa">{{ vehiculo.placa }}</span>
+        </div>
+        }
+      </div>
+
+      } @else if (cargandoComplementos()) {
+      <p class="nota">Consultando rentabilidad...</p>
+      } @else if (errorMargen()) {
+      <p class="nota" role="alert">{{ errorMargen() }}</p>
+      } @else if (margenesApi().length > 0) {
+      <div class="grafico" role="img" aria-label="Margen real por vehículo">
+        @for (vehiculo of margenesApi(); track vehiculo.placa) {
+        <div class="columna">
+          <span class="valor">
+            {{ formatoCOP(vehiculo.margen) }}
+          </span>
+          <div class="barra" [style.height.%]="vehiculo.porcentaje">
+          </div>
+          <span class="placa">{{ vehiculo.placa }}</span>
+        </div>
+        }
+      </div>
       } @else {
-        <p class="nota">La gráfica por vehículo requiere el servicio de reportes VT-015, pendiente de integrar en el Dashboard.</p>
+      <p class="nota">
+        No hay márgenes de recorridos cerrados
+        para el período consultado.
+      </p>
       }
+
     </section>
   </div>
 

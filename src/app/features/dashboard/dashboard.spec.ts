@@ -140,6 +140,45 @@ it('consume correctamente los contratos VT-004 y VT-005 de la API v2', async () 
     data: resumenFinancieroDemostracion('mes')
   });
 
+  const trips = http.expectOne(
+  'https://api.test.local/track/api/v2/enterprise/trips'
+);
+
+const rentabilidad = http.expectOne(
+  `https://api.test.local/track/api/v2/enterprise/reports/profitability?desde=${componente.desde}&hasta=${componente.hasta}`
+);
+
+expect(trips.request.method).toBe('GET');
+expect(rentabilidad.request.method).toBe('GET');
+
+  trips.flush({
+  errors: [],
+  data: {
+    elementos: [],
+    total: 0,
+    pagina: 1,
+    limite: 25
+  }
+});
+
+rentabilidad.flush({
+  errors: [],
+  data: {
+    resumen: {
+      tarifa_total: 0,
+      costo_estimado_total: 0,
+      costo_real_total: 0,
+      desviacion: 0,
+      margen_estimado_total: 0,
+      margen_real_total: 0
+    },
+    recorridos: [],
+    total: 0,
+    pagina: 1,
+    limite: 25
+  }
+});
+
   fixture.detectChanges();
 
   expect(componente.indicadores()?.vehiculos_total).toBe(6);
