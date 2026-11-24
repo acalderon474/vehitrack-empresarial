@@ -57,7 +57,8 @@ export function recorridoSeguimientoDesdeDto(
         vehiculoId: dto.vehiculo_id,
         placa: dto.placa,
         conductorId: dto.conductor_id,
-        conductor: dto.conductor,
+        conductorCodigo: dto.conductor_codigo,
+        conductorNombre: dto.conductor_nombre,
 
         estado: dto.estado,
         fechaInicio: dto.fecha_inicio,

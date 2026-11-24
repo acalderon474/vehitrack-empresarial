@@ -24,6 +24,15 @@ describe('Datos de prueba de Recorridos', () => {
         expect(lista.filter(r => r.estado === 'finalizado').length).toBe(10);
     });
 
+    it('debe asignar a cada conductor su nombre y su código', () => {
+        const r = store.listar().find(x => x.codigo === 'R-7825');
+
+        expect(r?.conductor_id).toBe('con-003');
+        expect(r?.conductor_codigo).toBe('C-003');
+        expect(r?.conductor_nombre).toBe('Marta Ospina');
+        expect(store.listar().every(x => x.conductor_nombre !== x.conductor_codigo)).toBe(true);
+    });
+
     it('debe coincidir con el cierre R-7825 de los diseños', () => {
         const r = store.listar().find(x => x.codigo === 'R-7825');
 

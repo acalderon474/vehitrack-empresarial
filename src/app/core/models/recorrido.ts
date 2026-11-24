@@ -51,7 +51,8 @@ export interface RecorridoSeguimiento {
     vehiculoId: string;
     placa: string;
     conductorId: string;
-    conductor: string;
+    conductorCodigo: string;
+    conductorNombre: string;
 
     estado: Recorrido['estado'];
     fechaInicio: string;

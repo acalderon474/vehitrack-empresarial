@@ -42,6 +42,14 @@ describe('Recorridos', () => {
     expect(pantalla.querySelectorAll('tbody tr').length).toBe(12);
   });
 
+  it('debe mostrar el nombre del conductor junto con su código', () => {
+    const fila = [...pantalla.querySelectorAll('tbody tr')]
+      .find(tr => tr.textContent?.includes('R-7825'));
+    const celdas = fila?.querySelectorAll('td') ?? [];
+
+    expect(celdas[4]?.textContent?.replace(/\s+/g, ' ').trim()).toBe('Marta Ospina (C-003)');
+  });
+
   it('debe seleccionar al inicio el último recorrido cerrado', () => {
     expect(component.seleccionado()?.codigo).toBe('R-7825');
     expect(pantalla.textContent).toContain('Costo real R-7825');
@@ -54,6 +62,7 @@ describe('Recorridos', () => {
     fixture.detectChanges();
 
     expect(pantalla.textContent).toContain('Cierre detallado · R-7825');
+    expect(pantalla.textContent).toContain('QAZ-118 / Marta Ospina (C-003)');
     expect(pantalla.textContent).toContain('$56.000');
     expect(pantalla.textContent).toContain('+$5.000');
   });

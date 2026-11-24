@@ -64,7 +64,7 @@
                 <td>{{ recorrido.solicitudCodigo }}</td>
                 <td>{{ recorrido.origen }} → {{ recorrido.destino }}</td>
                 <td>{{ recorrido.placa }}</td>
-                <td>{{ recorrido.conductor }}</td>
+                <td>{{ recorrido.conductorNombre }} <span class="codigo">({{ recorrido.conductorCodigo }})</span></td>
                 <td>
                   @if (recorrido.estado === 'en_curso') {
                     <span class="etiqueta en-curso">En curso</span>
@@ -92,7 +92,7 @@
           <section class="tarjeta">
             <h3>Cierre detallado · {{ recorrido.codigo }}</h3>
             <p class="subtitulo">
-              {{ recorrido.solicitudCodigo }} · {{ recorrido.placa }} / {{ recorrido.conductor }} ·
+              {{ recorrido.solicitudCodigo }} · {{ recorrido.placa }} / {{ recorrido.conductorNombre }} ({{ recorrido.conductorCodigo }}) ·
               {{ recorrido.tarifa | cop }} de ingreso registrado
             </p>
 
@@ -131,7 +131,8 @@
           <section class="tarjeta formulario-cierre">
             <h3>Registrar cierre · {{ recorrido.codigo }}</h3>
             <p class="subtitulo">
-              {{ recorrido.origen }} → {{ recorrido.destino }} · tarifa {{ recorrido.tarifa | cop }} ·
+              {{ recorrido.origen }} → {{ recorrido.destino }} · {{ recorrido.placa }} /
+              {{ recorrido.conductorNombre }} ({{ recorrido.conductorCodigo }}) · tarifa {{ recorrido.tarifa | cop }} ·
               costo estimado {{ recorrido.costoEstimado | cop }}
             </p>
 

@@ -77,8 +77,14 @@ describe('Reportes', () => {
 
   it('debe ofrecer los vehículos y conductores de los recorridos', () => {
     expect(component.vehiculos().length).toBe(6);
-    expect(component.conductores().map(c => c.etiqueta))
-      .toEqual(['C-001', 'C-002', 'C-003', 'C-004', 'C-005', 'C-006']);
+    expect(component.conductores().map(c => c.etiqueta)).toEqual([
+      'Andrea Villalba (C-005)',
+      'Carlos Pérez (C-001)',
+      'Jorge Castañeda (C-004)',
+      'Luis Herrera (C-002)',
+      'Marta Ospina (C-003)',
+      'Ricardo Mejía (C-006)',
+    ]);
   });
 
   it('debe filtrar el reporte por conductor', () => {
@@ -88,7 +94,7 @@ describe('Reportes', () => {
 
     expect(component.recorridos().map(r => r.codigo)).toEqual(['R-7822', 'R-7820']);
     expect(component.margenRegistrado()).toBe(165000);
-    expect(resumenConsulta()).toContain('Conductor C-004');
+    expect(resumenConsulta()).toContain('Conductor Jorge Castañeda (C-004)');
   });
 
   it('debe filtrar el reporte por vehículo', () => {

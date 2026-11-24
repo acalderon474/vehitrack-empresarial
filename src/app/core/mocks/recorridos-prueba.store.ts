@@ -40,6 +40,16 @@ const ID_VEHICULO: Record<string, string> = {
     'WXS-934': 'veh-106'
 };
 
+/** Mismos conductores ficticios que usa el módulo de Asignaciones. */
+const NOMBRE_CONDUCTOR: Record<string, string> = {
+    'C-001': 'Carlos Pérez',
+    'C-002': 'Luis Herrera',
+    'C-003': 'Marta Ospina',
+    'C-004': 'Jorge Castañeda',
+    'C-005': 'Andrea Villalba',
+    'C-006': 'Ricardo Mejía'
+};
+
 function idConductor(codigo: string): string {
     return codigo.replace('C-', 'con-');
 }
@@ -91,7 +101,8 @@ function cerrado(
         vehiculo_id: ID_VEHICULO[placa] ?? placa,
         placa,
         conductor_id: idConductor(conductor),
-        conductor,
+        conductor_codigo: conductor,
+        conductor_nombre: NOMBRE_CONDUCTOR[conductor] ?? conductor,
         estado: 'finalizado',
         fecha_inicio: `${fecha}T08:00:00Z`,
         fecha_fin: `${fecha}T11:00:00Z`,
@@ -126,7 +137,8 @@ function enCurso(
         vehiculo_id: ID_VEHICULO[placa] ?? placa,
         placa,
         conductor_id: idConductor(conductor),
-        conductor,
+        conductor_codigo: conductor,
+        conductor_nombre: NOMBRE_CONDUCTOR[conductor] ?? conductor,
         estado: 'en_curso',
         fecha_inicio: '2026-11-20T14:30:00Z',
         tarifa_pactada: tarifa,

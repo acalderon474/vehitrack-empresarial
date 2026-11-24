@@ -135,7 +135,7 @@ export class Reportes implements OnInit {
 
         for (const r of lista) {
           vehiculos.set(r.vehiculoId, r.placa);
-          conductores.set(r.conductorId, r.conductor);
+          conductores.set(r.conductorId, `${r.conductorNombre} (${r.conductorCodigo})`);
         }
 
         const aOpciones = (mapa: Map<string, string>): OpcionFiltro[] =>

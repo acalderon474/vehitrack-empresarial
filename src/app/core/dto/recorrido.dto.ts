@@ -64,7 +64,8 @@ export interface RecorridoSeguimientoDto {
     vehiculo_id: string;
     placa: string;
     conductor_id: string;
-    conductor: string;
+    conductor_codigo: string;
+    conductor_nombre: string;
 
     estado: 'en_curso' | 'finalizado';
     fecha_inicio: string;
