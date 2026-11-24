@@ -166,6 +166,47 @@ describe('ReporteService', () => {
         });
     });
 
+    it('debe aceptar la respuesta envuelta de la API v2', () => {
+
+        const reporte: ReporteRentabilidadDto = {
+            resumen: {
+                tarifa_total: 120000,
+                costo_estimado_total: 51000,
+                costo_real_total: 56000,
+                desviacion: 5000
+            },
+            recorridos: []
+        };
+
+        let respuesta: ReporteRentabilidadDto | undefined;
+
+        service.obtenerRentabilidad({
+            desde: '2026-11-01',
+            hasta: '2026-11-30'
+        }).subscribe(datos => respuesta = datos);
+
+        httpMock.expectOne(`${endpoint}?desde=2026-11-01&hasta=2026-11-30`)
+            .flush({ errors: [], data: reporte });
+
+        expect(respuesta).toEqual(reporte);
+    });
+
+    it('debe usar datos de prueba cuando no hay API configurada', () => {
+
+        environment.apiBaseUrl = '';
+
+        let respuesta: ReporteRentabilidadDto | undefined;
+
+        service.obtenerRentabilidad({
+            desde: '2026-11-01',
+            hasta: '2026-11-30'
+        }).subscribe(datos => respuesta = datos);
+
+        httpMock.expectNone(() => true);
+        expect(respuesta?.resumen.tarifa_total).toBe(1350000);
+        expect(respuesta?.recorridos.length).toBe(10);
+    });
+
     it('debe propagar errores HTTP del backend', () => {
 
         let codigoError: number | undefined;

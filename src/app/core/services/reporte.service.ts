@@ -1,8 +1,10 @@
 
 import { Injectable, inject } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, defer, map, of } from 'rxjs';
 
 import { ApiService } from './api.service';
+import { RecorridosPruebaStore } from '../mocks/recorridos-prueba.store';
+import { apiConfigurada, extraerDatos } from '../utils/respuesta-api';
 
 import type {
     FiltrosReporteDto,
@@ -24,6 +26,7 @@ import type {
 export class ReporteService {
 
     private readonly api = inject(ApiService);
+    private readonly datosPrueba = inject(RecorridosPruebaStore);
 
     /**
      * Consulta la rentabilidad de los recorridos
@@ -55,8 +58,16 @@ export class ReporteService {
             );
         }
 
-        return this.api.get<ReporteRentabilidadDto>(
+        if (!apiConfigurada()) {
+            return defer(() => of(this.datosPrueba.reporte(filtros)));
+        }
+
+        return this.api.get<unknown>(
             `enterprise/reports/profitability?${parametros.toString()}`
+        ).pipe(
+            map(respuesta =>
+                extraerDatos<ReporteRentabilidadDto>(respuesta)
+            )
         );
     }
 }

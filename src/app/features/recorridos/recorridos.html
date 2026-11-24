@@ -1,1 +1,205 @@
-<p>recorridos works!</p>
+<section class="panel">
+
+  <header class="encabezado">
+    <h2>Recorridos y cierre operativo</h2>
+    <p>Seguimiento del servicio, gastos imputados y verificación del margen</p>
+  </header>
+
+  @if (error()) {
+    <p class="alerta" role="alert">{{ error() }}</p>
+  }
+
+  @if (cargando() && recorridos().length === 0) {
+    <p class="estado-carga">Cargando recorridos...</p>
+  } @else {
+
+    <div class="indicadores">
+      <article class="indicador">
+        <span>Recorridos activos</span>
+        <strong>{{ activos() }}</strong>
+      </article>
+
+      <article class="indicador exito">
+        <span>Recorridos cerrados</span>
+        <strong>{{ cerrados() }}</strong>
+      </article>
+
+      <article class="indicador">
+        <span>Costo real {{ seleccionado()?.codigo }}</span>
+        <strong>{{ seleccionado()?.costoReal | cop }}</strong>
+      </article>
+
+      <article class="indicador aviso">
+        <span>Desviación {{ seleccionado()?.codigo }}</span>
+        <strong>{{ seleccionado()?.desviacionCostos | cop: true }}</strong>
+      </article>
+    </div>
+
+    <section class="tarjeta">
+      <h3>Recorridos en seguimiento</h3>
+
+      <div class="tabla-contenedor">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Recorrido</th>
+              <th scope="col">Solicitud</th>
+              <th scope="col">Ruta</th>
+              <th scope="col">Vehículo</th>
+              <th scope="col">Conductor</th>
+              <th scope="col">Estado</th>
+              <th scope="col">Margen real</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            @for (recorrido of recorridos(); track recorrido.id) {
+              <tr
+                [class.seleccionada]="recorrido.id === seleccionadoId()"
+                (click)="seleccionar(recorrido)"
+                (keydown.enter)="seleccionar(recorrido)"
+                tabindex="0"
+                [attr.aria-selected]="recorrido.id === seleccionadoId()">
+                <td>{{ recorrido.codigo }}</td>
+                <td>{{ recorrido.solicitudCodigo }}</td>
+                <td>{{ recorrido.origen }} → {{ recorrido.destino }}</td>
+                <td>{{ recorrido.placa }}</td>
+                <td>{{ recorrido.conductorNombre }} <span class="codigo">({{ recorrido.conductorCodigo }})</span></td>
+                <td>
+                  @if (recorrido.estado === 'en_curso') {
+                    <span class="etiqueta en-curso">En curso</span>
+                  } @else {
+                    <span class="etiqueta cerrado">Cerrado</span>
+                  }
+                </td>
+                <td>{{ recorrido.margenReal | cop }}</td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="7" class="vacio">No hay recorridos registrados.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    @if (seleccionado(); as recorrido) {
+      <div class="detalle">
+
+        @if (recorrido.estado === 'finalizado') {
+
+          <section class="tarjeta">
+            <h3>Cierre detallado · {{ recorrido.codigo }}</h3>
+            <p class="subtitulo">
+              {{ recorrido.solicitudCodigo }} · {{ recorrido.placa }} / {{ recorrido.conductorNombre }} ({{ recorrido.conductorCodigo }}) ·
+              {{ recorrido.tarifa | cop }} de ingreso registrado
+            </p>
+
+            @if (recorrido.gastos; as gastos) {
+              <div class="gastos">
+                <div><span>Combustible</span><strong>{{ gastos.combustible | cop }}</strong></div>
+                <div><span>Peajes</span><strong>{{ gastos.peajes | cop }}</strong></div>
+                <div><span>Mantenimiento</span><strong>{{ gastos.mantenimiento | cop }}</strong></div>
+                <div><span>Conductor</span><strong>{{ gastos.conductor | cop }}</strong></div>
+                <div><span>Otros gastos</span><strong>{{ gastos.otros | cop }}</strong></div>
+                <div><span>Costo total real</span><strong>{{ recorrido.costoReal | cop }}</strong></div>
+              </div>
+            }
+          </section>
+
+          <section class="tarjeta">
+            <h3>Conciliación de costos y márgenes</h3>
+            <dl class="conciliacion">
+              <div><dt>Costo estimado</dt><dd>{{ recorrido.costoEstimado | cop }}</dd></div>
+              <div><dt>Costo real registrado</dt><dd>{{ recorrido.costoReal | cop }}</dd></div>
+              <div><dt>Desviación de costo (real − estimado)</dt><dd>{{ recorrido.desviacionCostos | cop: true }}</dd></div>
+              <div><dt>Margen estimado</dt><dd>{{ recorrido.margenEstimado | cop }}</dd></div>
+              <div><dt>Margen registrado</dt><dd>{{ recorrido.margenReal | cop }}</dd></div>
+            </dl>
+
+            @if (resultadoCierre(); as resultado) {
+              <p class="confirmacion" role="status">
+                Cierre registrado. Margen real: {{ resultado.margen_real | cop }}
+                ({{ resultado.porcentaje_margen_real }} %).
+              </p>
+            }
+          </section>
+
+        } @else {
+
+          <section class="tarjeta formulario-cierre">
+            <h3>Registrar cierre · {{ recorrido.codigo }}</h3>
+            <p class="subtitulo">
+              {{ recorrido.origen }} → {{ recorrido.destino }} · {{ recorrido.placa }} /
+              {{ recorrido.conductorNombre }} ({{ recorrido.conductorCodigo }}) · tarifa {{ recorrido.tarifa | cop }} ·
+              costo estimado {{ recorrido.costoEstimado | cop }}
+            </p>
+
+            <form [formGroup]="formulario" (ngSubmit)="registrarCierre()">
+              <div class="campos">
+                <label>
+                  Kilómetros reales
+                  <input type="number" min="0" step="0.1" formControlName="kilometrosRecorridos"
+                    [class.invalido]="campoInvalido('kilometrosRecorridos')">
+                </label>
+                <label>
+                  Combustible (COP)
+                  <input type="number" min="0" formControlName="combustible"
+                    [class.invalido]="campoInvalido('combustible')">
+                </label>
+                <label>
+                  Peajes (COP)
+                  <input type="number" min="0" formControlName="peajes"
+                    [class.invalido]="campoInvalido('peajes')">
+                </label>
+                <label>
+                  Mantenimiento (COP)
+                  <input type="number" min="0" formControlName="mantenimiento"
+                    [class.invalido]="campoInvalido('mantenimiento')">
+                </label>
+                <label>
+                  Conductor (COP)
+                  <input type="number" min="0" formControlName="conductor"
+                    [class.invalido]="campoInvalido('conductor')">
+                </label>
+                <label>
+                  Otros gastos (COP)
+                  <input type="number" min="0" formControlName="otros"
+                    [class.invalido]="campoInvalido('otros')">
+                </label>
+              </div>
+
+              <label class="observaciones">
+                Observaciones
+                <textarea rows="2" formControlName="observaciones"></textarea>
+              </label>
+
+              @if (formulario.invalid && formulario.touched) {
+                <p class="alerta">Los valores deben ser números iguales o mayores que cero.</p>
+              }
+
+              <button type="submit" [disabled]="guardando()">
+                {{ guardando() ? 'Registrando...' : 'Registrar cierre' }}
+              </button>
+            </form>
+          </section>
+
+          <section class="tarjeta">
+            <h3>Valores previstos</h3>
+            <dl class="conciliacion">
+              <div><dt>Tarifa pactada</dt><dd>{{ recorrido.tarifa | cop }}</dd></div>
+              <div><dt>Costo estimado</dt><dd>{{ recorrido.costoEstimado | cop }}</dd></div>
+              <div><dt>Margen estimado</dt><dd>{{ recorrido.margenEstimado | cop }}</dd></div>
+            </dl>
+            <p class="nota">El backend calcula el costo real, la desviación y el margen al registrar el cierre.</p>
+          </section>
+        }
+      </div>
+    }
+  }
+
+  @if (datosDePrueba) {
+    <footer class="pie">Escenario académico de referencia · Datos ilustrativos, no provenientes de una API en producción</footer>
+  }
+</section>
