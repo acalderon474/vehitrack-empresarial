@@ -1,8 +1,9 @@
 
 import { Injectable, inject } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 
 import { ApiService } from './api.service';
+import { environment } from '../../../environments/environment';
 
 import type {
     FiltrosDashboardDto,
@@ -11,6 +12,15 @@ import type {
     ResumenFinancieroDashboardDto
 } from '../dto/dashboard.dto';
 
+// Estructura de las respuestas del backend Go.
+interface RespuestaApi<T> {
+    errors: Array<{
+        code: string;
+        message: string;
+    }>;
+    data: T;
+}
+
 @Injectable({
     providedIn: 'root'
 })
@@ -18,10 +28,11 @@ export class DashboardService {
 
     private readonly api = inject(ApiService);
 
+    private readonly rutaDashboard = environment.dashboardApiPath;
+
     /**
      * VT-004
-     * Consultar indicadores operativos
-     * del Dashboard empresarial.
+     * Consultar indicadores operativos.
      */
     obtenerIndicadores(
         filtros: FiltrosDashboardDto
@@ -32,22 +43,25 @@ export class DashboardService {
             hasta: filtros.hasta
         });
 
-        return this.api.get<IndicadoresDashboardDto>(
-            `enterprise/dashboard/kpis?${parametros.toString()}`
+        return this.api.get<RespuestaApi<IndicadoresDashboardDto>>(
+            `${this.rutaDashboard}/kpis?${parametros.toString()}`
+        ).pipe(
+            map(respuesta => respuesta.data)
         );
     }
 
     /**
      * VT-005
-     * Consultar el resumen financiero
-     * del período seleccionado.
+     * Consultar resumen financiero.
      */
     obtenerResumenFinanciero(
         periodo: PeriodoFinanciero
     ): Observable<ResumenFinancieroDashboardDto> {
 
-        return this.api.get<ResumenFinancieroDashboardDto>(
-            `enterprise/dashboard/financial-summary?periodo=${encodeURIComponent(periodo)}`
+        return this.api.get<RespuestaApi<ResumenFinancieroDashboardDto>>(
+            `${this.rutaDashboard}/financial-summary?periodo=${encodeURIComponent(periodo)}`
+        ).pipe(
+            map(respuesta => respuesta.data)
         );
     }
 }

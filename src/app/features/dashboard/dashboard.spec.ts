@@ -14,7 +14,12 @@ import {
 
 describe('Dashboard - escenario académico', () => {
   const original = environment.apiBaseUrl;
-  afterEach(() => { environment.apiBaseUrl = original; });
+  const modoOriginal = environment.modoDemostracion;
+
+afterEach(() => {
+  environment.apiBaseUrl = original;
+  environment.modoDemostracion = modoOriginal;
+});
 
   it('reproduce los diez cierres y los cinco KPIs del caso académico', () => {
     expect(indicadoresDemostracion('2026-11-01', '2026-11-20')).toEqual({
@@ -53,6 +58,7 @@ describe('Dashboard - escenario académico', () => {
 
   it('renderiza el Dashboard y advierte que los datos son ilustrativos', async () => {
     environment.apiBaseUrl = '';
+    environment.modoDemostracion = true;
     await TestBed.configureTestingModule({
       imports: [Dashboard],
       providers: [provideHttpClient()],
@@ -71,6 +77,7 @@ describe('Dashboard - escenario académico', () => {
 
   it('no altera los resultados al introducir fechas inválidas', async () => {
     environment.apiBaseUrl = '';
+    environment.modoDemostracion = true;
     await TestBed.configureTestingModule({
       imports: [Dashboard],
       providers: [provideHttpClient()],
@@ -85,27 +92,60 @@ describe('Dashboard - escenario académico', () => {
     expect(componente.consultaAplicada()?.desde).toBe('2026-11-01');
   });
 
-  it('usa la API cuando la URL está configurada y no disfraza fallos con mocks', async () => {
-    environment.apiBaseUrl = 'https://api.test.local/api/v1';
-    await TestBed.configureTestingModule({
-      imports: [Dashboard],
-      providers: [provideHttpClient(), provideHttpClientTesting()],
-    }).compileComponents();
+it('consume correctamente los contratos VT-004 y VT-005 de la API v2', async () => {
+  environment.apiBaseUrl = 'https://api.test.local';
+  environment.modoDemostracion = false;
 
-    const fixture = TestBed.createComponent(Dashboard);
-    const componente = fixture.componentInstance;
-    const http = TestBed.inject(HttpTestingController);
-    fixture.detectChanges();
+  await TestBed.configureTestingModule({
+    imports: [Dashboard],
+    providers: [
+      provideHttpClient(),
+      provideHttpClientTesting()
+    ],
+  }).compileComponents();
 
-    const kpis = http.expectOne('https://api.test.local/api/v1/enterprise/dashboard/kpis?desde=' + componente.desde + '&hasta=' + componente.hasta);
-    const financiero = http.expectOne('https://api.test.local/api/v1/enterprise/dashboard/financial-summary?periodo=mes');
-    expect(kpis.request.method).toBe('GET');
-    expect(financiero.request.method).toBe('GET');
+  const fixture = TestBed.createComponent(Dashboard);
+  const componente = fixture.componentInstance;
+  const http = TestBed.inject(HttpTestingController);
 
-    kpis.flush({ vehiculos_total: 6, vehiculos_disponibles: 4, vehiculos_en_servicio: 2, solicitudes_pendientes: 1, recorridos_finalizados: 10 });
-    financiero.flush(resumenFinancieroDemostracion('mes'));
-    expect(componente.indicadores()?.vehiculos_total).toBe(6);
-    expect(componente.demostracion).toBe(false);
-    http.verify();
+  fixture.detectChanges();
+
+  const rutaBase =
+    'https://api.test.local/api/v2/enterprise/dashboard';
+
+  const kpis = http.expectOne(
+    `${rutaBase}/kpis?desde=${componente.desde}&hasta=${componente.hasta}`
+  );
+
+  const financiero = http.expectOne(
+    `${rutaBase}/financial-summary?periodo=mes`
+  );
+
+  expect(kpis.request.method).toBe('GET');
+  expect(financiero.request.method).toBe('GET');
+
+  kpis.flush({
+    errors: [],
+    data: {
+      vehiculos_total: 6,
+      vehiculos_disponibles: 4,
+      vehiculos_en_servicio: 2,
+      solicitudes_pendientes: 1,
+      recorridos_finalizados: 10
+    }
   });
+
+  financiero.flush({
+    errors: [],
+    data: resumenFinancieroDemostracion('mes')
+  });
+
+  fixture.detectChanges();
+
+  expect(componente.indicadores()?.vehiculos_total).toBe(6);
+  expect(componente.finanzas()?.margen_real).toBe(639000);
+  expect(componente.demostracion).toBe(false);
+
+  http.verify();
 });
+  });

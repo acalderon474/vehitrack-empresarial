@@ -41,8 +41,7 @@ export function variacionMargen(resumen: ResumenFinancieroDashboardDto): number 
 export class Dashboard implements OnInit {
   private readonly servicio = inject(DashboardService);
 
-  /** La URL de la API se configura fuera de GitHub Pages, sin incluir secretos. */
-  readonly demostracion = !environment.apiBaseUrl.trim();
+  readonly demostracion = environment.modoDemostracion;
   readonly fechaCorte = CORTE_DEMOSTRACION;
   readonly formatoCOP = (valor: number) => formatoCOP.format(valor);
   readonly fechaColombia = fechaColombia;
