@@ -104,16 +104,26 @@ export class SolicitudService {
      * Consulta una solicitud por su identificador (lo usa Asignaciones).
      * GET enterprise/requests/{id}   [PROPUESTO: la matriz no lo define]
      */
+    /** Actualizacion
+     * Consulta una solicitud por su identificador (lo usa Asignaciones).
+     * Busca en el listado general porque GET enterprise/requests/{id} no existe en el backend.
+     */
     obtener(id: string): Observable<SolicitudResumen> {
+        if (this.usaDatosSimulados) {
+            return simular(() => this.simulado.obtener(id)).pipe(
+                map(solicitudResumenDesdeDto)
+            );
+        }
 
-        const respuesta$: Observable<SolicitudResumenDto> =
-            this.usaDatosSimulados
-                ? simular(() => this.simulado.obtener(id))
-                : this.api.get<SolicitudResumenDto>(
-                    `enterprise/requests/${encodeURIComponent(id)}`
-                );
-
-        return respuesta$.pipe(map(solicitudResumenDesdeDto));
+        return this.listar().pipe(
+            map(listado => {
+                const encontrada = listado.elementos.find(s => s.id === id);
+                if (!encontrada) {
+                    throw new Error(`No se encontró la solicitud con id ${id}`);
+                }
+                return encontrada;
+            })
+        );
     }
 
     /**
