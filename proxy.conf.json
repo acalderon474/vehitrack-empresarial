@@ -1,0 +1,8 @@
+{
+  "/track": {
+    "target": "https://api.system-one-fact.com",
+    "secure": true,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  }
+}

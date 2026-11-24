@@ -1,1 +1,232 @@
-<p>asignaciones works!</p>
+<section class="asignaciones">
+
+  <header class="cabecera">
+    <h1>Comparación y recomendación de vehículos</h1>
+
+    @if (solicitud(); as s) {
+      <p>
+        {{ historial() ? 'Historial de asignación' : 'Solicitud' }}
+        {{ resumenSolicitud(s) }}
+      </p>
+    } @else {
+      <p>Elige una solicitud pendiente para comparar los vehículos disponibles.</p>
+    }
+  </header>
+
+  @switch (modo()) {
+
+    @case ('cargando') {
+      <p class="estado" role="status">Cargando…</p>
+    }
+
+    @case ('error') {
+      <p class="error-general" role="alert">
+        {{ error() }}
+        <button type="button" class="boton secundario" (click)="actualizar()">Reintentar</button>
+      </p>
+    }
+
+    @case ('sin-solicitud') {
+      <section class="panel" aria-labelledby="titulo-pendientes">
+        <h2 id="titulo-pendientes">Solicitudes pendientes de asignación</h2>
+
+        @if (pendientes().length === 0) {
+          <p class="estado">No hay solicitudes pendientes de asignación.</p>
+        } @else {
+          <ul class="lista-pendientes">
+            @for (pendiente of pendientes(); track pendiente.id) {
+              <li>
+                <div>
+                  <strong>{{ pendiente.codigo }}</strong>
+                  @if (pendiente.nombreCliente) {
+                    <span class="cliente"> · {{ pendiente.nombreCliente }}</span>
+                  }
+                  <span class="resumen">{{ resumenSolicitud(pendiente, false) }}</span>
+                </div>
+                <button type="button" class="boton" (click)="elegirSolicitud(pendiente.id)">
+                  Ver recomendaciones
+                </button>
+              </li>
+            }
+          </ul>
+        }
+      </section>
+    }
+
+    @case ('cancelada') {
+      <p class="nota-informativa" role="note">
+        La solicitud está cancelada y no tiene asignación.
+      </p>
+      <button type="button" class="boton secundario" (click)="volverASolicitudes()">
+        Volver a solicitudes
+      </button>
+    }
+
+    @default {
+
+      <!-- Barra de contexto -->
+      <div class="contexto">
+        @if (historial(); as h) {
+          <p>
+            Recorrido vinculado: <strong>{{ h.codigoRecorrido ?? '—' }}</strong>
+            · Estado actual: servicio {{ h.estadoServicio }}
+            · Selección realizada por el coordinador
+          </p>
+          <span class="insignia confirmada">Asignación confirmada</span>
+        } @else {
+          <p>Solicitud pendiente de asignación · El sistema recomienda y el coordinador conserva la decisión final</p>
+          <span class="insignia pendiente">Pendiente</span>
+        }
+      </div>
+
+      <!-- Tarjetas de vehículos -->
+      @if (alternativas().length === 0) {
+        <p class="nota-informativa" role="note">
+          No hay vehículos disponibles con capacidad suficiente para esta solicitud en ese horario.
+        </p>
+      } @else {
+        <div class="tarjetas">
+          @for (alternativa of alternativas(); track alternativa.vehiculoId; let i = $index) {
+            <app-alternativa-vehiculo
+              [alternativa]="alternativa"
+              [letra]="letra(i)"
+              [modo]="historial() ? 'consulta' : 'elegir'"
+              [elegida]="!historial() && alternativa.vehiculoId === alternativaElegida()?.vehiculoId"
+              [confirmada]="alternativa.vehiculoId === historial()?.vehiculoElegidoId"
+              (elegir)="elegirVehiculo($event)" />
+          }
+        </div>
+
+        <!-- Explicación de la recomendación -->
+        <section class="panel" aria-labelledby="titulo-explicacion">
+          <h2 id="titulo-explicacion">Recomendaciones alternativas de asignación</h2>
+
+          @if (alternativaElegida(); as elegida) {
+            <p class="explicacion">
+              <strong>{{ nombreVehiculo(elegida) }}</strong>
+              {{ elegida.recomendado ? '(recomendado)' : '(alternativa)' }}:
+              {{ elegida.explicacionCriterios }}
+              El coordinador conserva la decisión final.
+            </p>
+          }
+
+          @if (historial(); as h) {
+            <div class="decision">
+              <p>
+                <strong>Decisión registrada:</strong>
+                {{ nombreVehiculo(alternativaConfirmada()) }} + {{ h.conductorCodigo ?? h.conductorNombre }}
+                · elección confirmada{{ h.estadoServicio === 'finalizado' ? ' y servicio finalizado' : '' }}.
+                @if (!h.esRecomendada) {
+                  <span class="motivo">Motivo: {{ h.motivoSeleccion }}</span>
+                }
+              </p>
+              <span class="insignia confirmada">{{ nombreVehiculo(alternativaConfirmada()) }} confirmado</span>
+            </div>
+          }
+        </section>
+      }
+
+      <!-- Margen previsto y registrado (historial) -->
+      @if (historial(); as h) {
+        <div class="cifras" role="group" aria-label="Margen de la asignación">
+          <article>
+            <h3>Margen previsto de {{ nombreVehiculo(alternativaConfirmada()) }}</h3>
+            <p>{{ formatoCop(h.margenPrevisto) }}</p>
+          </article>
+          <article>
+            <h3>Margen registrado al cierre</h3>
+            <p>{{ h.margenRegistrado !== undefined ? formatoCop(h.margenRegistrado) : '—' }}</p>
+          </article>
+          <article>
+            <h3>Diferencia de margen</h3>
+            <p>{{ diferenciaMargen(h) }}</p>
+          </article>
+        </div>
+
+        <button type="button" class="boton secundario" (click)="volverASolicitudes()">
+          Volver a solicitudes
+        </button>
+      }
+
+      <!-- Confirmación (solicitud pendiente) -->
+      @if (!historial() && alternativas().length > 0) {
+
+        @if (confirmacion(); as resultado) {
+          <section class="panel exito" role="status" aria-labelledby="titulo-exito">
+            <h2 id="titulo-exito">Asignación confirmada</h2>
+            <dl>
+              <div><dt>Vehículo</dt><dd>{{ nombreVehiculo(alternativaElegida()) }} · {{ resultado.estadoVehiculo }}</dd></div>
+              <div><dt>Conductor</dt><dd>{{ resultado.estadoConductor }}</dd></div>
+              <div><dt>Costo estimado</dt><dd>{{ formatoCop(resultado.costoEstimado) }}</dd></div>
+            </dl>
+            <div class="acciones">
+              <button type="button" class="boton" (click)="verHistorial()">Ver historial</button>
+              <button type="button" class="boton secundario" (click)="volverASolicitudes()">
+                Volver a solicitudes
+              </button>
+            </div>
+          </section>
+
+        } @else {
+          <section class="panel" aria-labelledby="titulo-confirmar">
+            <h2 id="titulo-confirmar">Confirmar la asignación</h2>
+
+            @if (errorConfirmar(); as mensaje) {
+              <p class="error-general" role="alert">
+                {{ mensaje }}
+                <button type="button" class="boton secundario" (click)="actualizar()">
+                  Actualizar recomendaciones
+                </button>
+              </p>
+            }
+
+            <div class="campos">
+              <div class="campo">
+                <label for="conductor">Conductor</label>
+                <select
+                  id="conductor"
+                  [formControl]="conductorId"
+                  [attr.aria-invalid]="mensajeConductor() !== ''">
+                  <option value="">Selecciona un conductor</option>
+                  @for (conductor of conductores(); track conductor.id) {
+                    <option [value]="conductor.id" [disabled]="licenciaVencida(conductor)">
+                      {{ etiquetaConductor(conductor) }}
+                    </option>
+                  }
+                </select>
+                @if (mensajeConductor(); as m) {
+                  <span class="mensaje" role="alert">{{ m }}</span>
+                }
+              </div>
+
+              <div class="campo">
+                <label for="motivoSeleccion">
+                  Motivo de la selección
+                  @if (motivoObligatorio()) { (obligatorio) } @else { (opcional) }
+                </label>
+                <textarea
+                  id="motivoSeleccion"
+                  rows="2"
+                  [formControl]="motivo"
+                  [attr.aria-invalid]="mensajeMotivo() !== ''"></textarea>
+                @if (mensajeMotivo(); as m) {
+                  <span class="mensaje" role="alert">{{ m }}</span>
+                }
+              </div>
+            </div>
+
+            <div class="acciones">
+              <button type="button" class="boton" [disabled]="confirmando()" (click)="confirmar()">
+                @if (confirmando()) { Confirmando… } @else { Confirmar asignación }
+              </button>
+              <button type="button" class="boton secundario" (click)="volverASolicitudes()">
+                Volver a solicitudes
+              </button>
+            </div>
+          </section>
+        }
+      }
+    }
+  }
+
+</section>

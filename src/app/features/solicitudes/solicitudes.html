@@ -1,1 +1,33 @@
-<p>solicitudes works!</p>
+<section class="solicitudes">
+
+  <header class="cabecera">
+    <div>
+      <h1>Solicitudes de servicio</h1>
+      <p>Registro de traslados, agenda y estados del ciclo de vida</p>
+    </div>
+
+    <button type="button" class="boton" (click)="alternarNueva()">
+      @if (mostrandoNueva()) { Ocultar formulario } @else { Nueva solicitud }
+    </button>
+  </header>
+
+  @if (mostrandoNueva()) {
+    <div class="panel">
+      <app-solicitud-formulario
+        (registrada)="alRegistrar()"
+        (cerrado)="cerrarFormularios()" />
+    </div>
+  }
+
+  @if (enEdicion(); as solicitud) {
+    <div class="panel">
+      <app-solicitud-formulario
+        [solicitudEditar]="solicitud"
+        (guardada)="alGuardar()"
+        (cerrado)="cerrarFormularios()" />
+    </div>
+  }
+
+  <app-solicitud-listado (editar)="iniciarEdicion($event)" />
+
+</section>

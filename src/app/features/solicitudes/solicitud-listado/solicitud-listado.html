@@ -1,0 +1,252 @@
+<section class="listado" aria-label="Solicitudes de servicio">
+
+  <!-- Conteo por estado -->
+  <div class="tarjetas" role="group" aria-label="Resumen por estado">
+    <article class="tarjeta pendiente">
+      <h3>Pendientes</h3>
+      <p class="cifra">{{ conteos().pendiente }}</p>
+    </article>
+    <article class="tarjeta asignada">
+      <h3>Asignadas</h3>
+      <p class="cifra">{{ conteos().asignada }}</p>
+    </article>
+    <article class="tarjeta finalizada">
+      <h3>Finalizadas (recientes)</h3>
+      <p class="cifra">{{ conteos().finalizada }}</p>
+    </article>
+    <article class="tarjeta cancelada">
+      <h3>Canceladas (recientes)</h3>
+      <p class="cifra">{{ conteos().cancelada }}</p>
+    </article>
+  </div>
+
+  <!-- Detalle de la solicitud elegida -->
+  @if (seleccionada(); as elegida) {
+    <section class="panel detalle" aria-labelledby="titulo-detalle">
+      <h2 id="titulo-detalle">
+        Detalle de la solicitud {{ elegida.codigo }}
+        @if (elegida.nombreCliente) {
+          <span class="cliente">· {{ elegida.nombreCliente }}</span>
+        }
+      </h2>
+
+      <dl class="campos">
+        <div>
+          <dt>Origen</dt>
+          <dd>{{ texto(elegida.origen?.direccion) }}</dd>
+        </div>
+        <div>
+          <dt>Destino</dt>
+          <dd>{{ texto(elegida.destino?.direccion) }}</dd>
+        </div>
+        <div>
+          <dt>Fecha y hora</dt>
+          <dd>{{ fechaLarga(elegida) }}</dd>
+        </div>
+        <div>
+          <dt>Pasajeros</dt>
+          <dd>{{ elegida.cantidadPasajeros }} {{ elegida.cantidadPasajeros === 1 ? 'pasajero' : 'pasajeros' }}</dd>
+        </div>
+        <div>
+          <dt>Tarifa pactada</dt>
+          <dd>{{ formatoCop(elegida.tarifa) }} COP</dd>
+        </div>
+        <div>
+          <dt>Referencia</dt>
+          <dd>{{ elegida.codigo }}</dd>
+        </div>
+      </dl>
+
+      <div class="pie-detalle">
+        <p class="nota-estado">{{ notaDeEstado(elegida) }}</p>
+
+        @if (textoAccionAsignacion(elegida); as accion) {
+          <button type="button" class="boton claro" (click)="irAAsignacion(elegida)">
+            {{ accion }}
+          </button>
+        }
+      </div>
+    </section>
+  }
+
+  <!-- Listado -->
+  <section class="panel" aria-labelledby="titulo-listado">
+    <h2 id="titulo-listado">Solicitudes recientes</h2>
+
+    <form class="filtros" [formGroup]="filtros" role="search" aria-label="Filtros del listado" (submit)="$event.preventDefault()">
+
+      <div class="campo">
+        <label for="filtroEstado">Estado</label>
+        <select id="filtroEstado" formControlName="estado">
+          <option value="">Todos</option>
+          @for (estado of estados; track estado) {
+            <option [value]="estado">{{ etiquetaEstado(estado) }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="campo">
+        <label for="filtroFecha">Fecha del servicio</label>
+        <input id="filtroFecha" type="date" formControlName="fecha" />
+      </div>
+
+      <div class="campo">
+        <label for="filtroCliente">Cliente o código</label>
+        <input
+          id="filtroCliente"
+          type="search"
+          autocomplete="off"
+          #cliente
+          [value]="textoCliente()"
+          (input)="textoCliente.set(cliente.value)" />
+      </div>
+
+      <button type="button" class="boton secundario" (click)="limpiarFiltros()">
+        Limpiar filtros
+      </button>
+    </form>
+
+    @if (aviso(); as mensaje) {
+      <p class="aviso" role="status">{{ mensaje }}</p>
+    }
+
+    @if (porCancelar(); as solicitud) {
+      <section class="cancelar" role="dialog" aria-labelledby="titulo-cancelar">
+        <h3 id="titulo-cancelar">Cancelar la solicitud {{ solicitud.codigo }}</h3>
+
+        @if (solicitud.estado === 'asignada') {
+          <p class="advertencia">
+            Esta solicitud tiene una asignación vigente. Al cancelarla se
+            libera el vehículo y el conductor asignados.
+          </p>
+        }
+
+        <div class="campo">
+          <label for="motivoCancelacion">Motivo de la cancelación</label>
+          <textarea
+            id="motivoCancelacion"
+            rows="3"
+            [formControl]="motivo"
+            [attr.aria-invalid]="motivo.invalid && motivo.touched"></textarea>
+          @if (mensajeMotivo(); as m) {
+            <span class="mensaje" role="alert">{{ m }}</span>
+          }
+        </div>
+
+        @if (errorCancelar(); as mensaje) {
+          <p class="error-general" role="alert">{{ mensaje }}</p>
+        }
+
+        <div class="acciones">
+          <button
+            type="button"
+            class="boton peligro"
+            [disabled]="procesando()"
+            (click)="confirmarCancelacion()">
+            @if (procesando()) { Cancelando… } @else { Confirmar cancelación }
+          </button>
+          <button type="button" class="boton secundario" (click)="cerrarCancelacion()">
+            Volver
+          </button>
+        </div>
+      </section>
+    }
+
+    @if (error(); as mensaje) {
+      <p class="error-general" role="alert">
+        {{ mensaje }}
+        <button type="button" class="boton secundario" (click)="cargar()">Reintentar</button>
+      </p>
+    } @else if (cargando()) {
+      <p class="estado" role="status">Cargando solicitudes…</p>
+    } @else if (visibles().length === 0) {
+      <p class="estado">No hay solicitudes que coincidan con los filtros.</p>
+    } @else {
+      <div class="tabla-contenedor">
+        <table>
+          <caption class="oculto">Listado de solicitudes de transporte</caption>
+          <thead>
+            <tr>
+              <th scope="col">Solicitud</th>
+              <th scope="col">Ruta</th>
+              <th scope="col">Fecha · Hora</th>
+              <th scope="col" class="numero">Pasajeros</th>
+              <th scope="col" class="numero">Tarifa</th>
+              <th scope="col">Estado</th>
+              <th scope="col">Recorrido</th>
+              <th scope="col">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (solicitud of visibles(); track solicitud.id) {
+              <tr
+                [class.elegida]="solicitud.id === seleccionada()?.id"
+                (click)="seleccionar(solicitud)">
+                <th scope="row">
+                  <button
+                    type="button"
+                    class="codigo"
+                    [attr.aria-pressed]="solicitud.id === seleccionada()?.id"
+                    [attr.aria-label]="'Ver el detalle de la solicitud ' + solicitud.codigo"
+                    (click)="seleccionar(solicitud)">
+                    {{ solicitud.codigo }}
+                  </button>
+                  @if (solicitud.nombreCliente) {
+                    <span class="cliente">{{ solicitud.nombreCliente }}</span>
+                  }
+                </th>
+                <td class="ruta">{{ ruta(solicitud) }}</td>
+                <td class="fecha">{{ fechaCorta(solicitud) }}</td>
+                <td class="numero">{{ solicitud.cantidadPasajeros }}</td>
+                <td class="numero">{{ formatoCop(solicitud.tarifa) }}</td>
+                <td>
+                  <span class="estado-insignia" [class]="'estado-' + solicitud.estado">
+                    {{ etiquetaEstado(solicitud.estado) }}
+                  </span>
+                </td>
+                <td class="recorrido">{{ texto(solicitud.codigoRecorrido) }}</td>
+                <td class="acciones-fila">
+                  @if (puedeEditar(solicitud)) {
+                    <button
+                      type="button"
+                      class="enlace"
+                      [attr.aria-label]="'Editar la solicitud ' + solicitud.codigo"
+                      (click)="editar.emit(solicitud)">
+                      Editar
+                    </button>
+                  }
+                  @if (puedeCancelar(solicitud)) {
+                    <button
+                      type="button"
+                      class="enlace peligro"
+                      [attr.aria-label]="'Cancelar la solicitud ' + solicitud.codigo"
+                      (click)="iniciarCancelacion(solicitud)">
+                      Cancelar
+                    </button>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <p class="resumen">
+        Mostrando {{ visibles().length }} de {{ total() }} solicitudes.
+      </p>
+    }
+  </section>
+
+  <p class="nota-informativa" role="note">
+    Los estados son <strong>pendiente, asignada, finalizada y cancelada</strong>.
+    «En curso» pertenece al recorrido, no a la solicitud.
+  </p>
+
+  @if (datosSimulados) {
+    <p class="pie-simulado">
+      <span>Escenario de referencia · Datos ilustrativos</span>
+      <span>Vehitrack Empresarial</span>
+    </p>
+  }
+
+</section>
