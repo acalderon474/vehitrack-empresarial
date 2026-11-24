@@ -1,0 +1,239 @@
+<section class="formulario" aria-labelledby="titulo-formulario">
+
+  @if (solicitudEditar(); as edicion) {
+    <h2 id="titulo-formulario">Editar solicitud {{ edicion.codigo }}</h2>
+  } @else {
+    <h2 id="titulo-formulario">Registrar solicitud de transporte</h2>
+  }
+
+  @if (resultado(); as solicitud) {
+
+    <div class="resultado" role="status">
+      <h3>Solicitud registrada</h3>
+
+      <dl>
+        <dt>Código</dt>
+        <dd>{{ solicitud.codigo }}</dd>
+
+        <dt>Estado</dt>
+        <dd>{{ etiquetaEstado(solicitud.estado) }}</dd>
+
+        <dt>Cliente</dt>
+        <dd>{{ solicitud.nombreCliente }}</dd>
+
+        <dt>Ruta</dt>
+        <dd>{{ solicitud.origen.direccion }} → {{ solicitud.destino.direccion }}</dd>
+
+        <dt>Pasajeros</dt>
+        <dd>{{ solicitud.cantidadPasajeros }}</dd>
+
+        <dt>Tarifa pactada</dt>
+        <dd>{{ formatoCop(solicitud.tarifa) }}</dd>
+
+        <dt>Distancia estimada</dt>
+        <dd>
+          @if (solicitud.kmEstimados !== undefined) {
+            {{ solicitud.kmEstimados }} km
+          } @else {
+            No disponible (faltan las coordenadas de origen y destino)
+          }
+        </dd>
+
+        <dt>Duración estimada</dt>
+        <dd>
+          @if (solicitud.duracionEstimadaMin !== undefined) {
+            {{ formatoDuracion(solicitud.duracionEstimadaMin) }}
+          } @else {
+            No disponible
+          }
+        </dd>
+      </dl>
+
+      <div class="acciones">
+        <button type="button" class="boton" (click)="registrarOtra()">
+          Registrar otra solicitud
+        </button>
+        <button type="button" class="boton secundario" (click)="cerrar()">
+          Volver al listado
+        </button>
+      </div>
+    </div>
+
+  } @else {
+
+    <form [formGroup]="formulario" (ngSubmit)="enviar()" novalidate>
+
+      @if (error(); as mensaje) {
+        <p class="error-general" role="alert">{{ mensaje }}</p>
+      }
+
+      @if (rutaBloqueada()) {
+        <p class="aviso-bloqueo" role="note">
+          Esta solicitud ya tiene una asignación vigente: la fecha, los
+          pasajeros y la ruta no se pueden editar. Solo puedes cambiar
+          el cliente y la tarifa.
+        </p>
+      }
+
+      <fieldset class="servicio">
+        <legend>Cliente y servicio</legend>
+
+        <div class="campo">
+          <label for="nombreCliente">Cliente</label>
+          <input
+            id="nombreCliente"
+            type="text"
+            formControlName="nombreCliente"
+            autocomplete="off"
+            [attr.aria-invalid]="formulario.controls.nombreCliente.invalid && formulario.controls.nombreCliente.touched" />
+          @if (mensajeError(formulario.controls.nombreCliente); as m) {
+            <span class="mensaje" role="alert">{{ m }}</span>
+          }
+        </div>
+
+        <div class="campo">
+          <label for="fechaHora">Fecha y hora del servicio</label>
+          <input
+            id="fechaHora"
+            type="datetime-local"
+            formControlName="fechaHora"
+            [attr.min]="fechaMinima"
+            [attr.aria-invalid]="formulario.controls.fechaHora.invalid && formulario.controls.fechaHora.touched" />
+          @if (mensajeError(formulario.controls.fechaHora); as m) {
+            <span class="mensaje" role="alert">{{ m }}</span>
+          }
+        </div>
+
+        <div class="campo">
+          <label for="cantidadPasajeros">Pasajeros</label>
+          <input
+            id="cantidadPasajeros"
+            type="number"
+            inputmode="numeric"
+            min="1"
+            [attr.max]="maxPasajeros"
+            formControlName="cantidadPasajeros"
+            [attr.aria-invalid]="formulario.controls.cantidadPasajeros.invalid && formulario.controls.cantidadPasajeros.touched" />
+          @if (mensajeError(formulario.controls.cantidadPasajeros); as m) {
+            <span class="mensaje" role="alert">{{ m }}</span>
+          }
+        </div>
+
+        <div class="campo">
+          <label for="tarifa">Tarifa pactada (COP)</label>
+          <input
+            id="tarifa"
+            type="number"
+            inputmode="numeric"
+            min="1"
+            formControlName="tarifa"
+            [attr.aria-invalid]="formulario.controls.tarifa.invalid && formulario.controls.tarifa.touched" />
+          @if (mensajeError(formulario.controls.tarifa); as m) {
+            <span class="mensaje" role="alert">{{ m }}</span>
+          }
+        </div>
+      </fieldset>
+
+      <fieldset formGroupName="origen">
+        <legend>Origen</legend>
+
+        <div class="campo">
+          <label for="origenDireccion">Dirección o lugar de recogida</label>
+          <input
+            id="origenDireccion"
+            type="text"
+            formControlName="direccion"
+            autocomplete="off"
+            [attr.aria-invalid]="formulario.controls.origen.controls.direccion.invalid && formulario.controls.origen.controls.direccion.touched" />
+          @if (mensajeError(formulario.controls.origen.controls.direccion); as m) {
+            <span class="mensaje" role="alert">{{ m }}</span>
+          }
+        </div>
+
+        <div class="fila">
+          <div class="campo">
+            <label for="origenLat">Latitud (opcional)</label>
+            <input id="origenLat" type="number" step="any" formControlName="lat" />
+            @if (mensajeError(formulario.controls.origen.controls.lat); as m) {
+              <span class="mensaje" role="alert">{{ m }}</span>
+            }
+          </div>
+
+          <div class="campo">
+            <label for="origenLng">Longitud (opcional)</label>
+            <input id="origenLng" type="number" step="any" formControlName="lng" />
+            @if (mensajeError(formulario.controls.origen.controls.lng); as m) {
+              <span class="mensaje" role="alert">{{ m }}</span>
+            }
+          </div>
+        </div>
+
+        @if (mensajeError(formulario.controls.origen); as m) {
+          <span class="mensaje" role="alert">{{ m }}</span>
+        }
+      </fieldset>
+
+      <fieldset formGroupName="destino">
+        <legend>Destino</legend>
+
+        <div class="campo">
+          <label for="destinoDireccion">Dirección o lugar de llegada</label>
+          <input
+            id="destinoDireccion"
+            type="text"
+            formControlName="direccion"
+            autocomplete="off"
+            [attr.aria-invalid]="formulario.controls.destino.controls.direccion.invalid && formulario.controls.destino.controls.direccion.touched" />
+          @if (mensajeError(formulario.controls.destino.controls.direccion); as m) {
+            <span class="mensaje" role="alert">{{ m }}</span>
+          }
+        </div>
+
+        <div class="fila">
+          <div class="campo">
+            <label for="destinoLat">Latitud (opcional)</label>
+            <input id="destinoLat" type="number" step="any" formControlName="lat" />
+            @if (mensajeError(formulario.controls.destino.controls.lat); as m) {
+              <span class="mensaje" role="alert">{{ m }}</span>
+            }
+          </div>
+
+          <div class="campo">
+            <label for="destinoLng">Longitud (opcional)</label>
+            <input id="destinoLng" type="number" step="any" formControlName="lng" />
+            @if (mensajeError(formulario.controls.destino.controls.lng); as m) {
+              <span class="mensaje" role="alert">{{ m }}</span>
+            }
+          </div>
+        </div>
+
+        @if (mensajeError(formulario.controls.destino); as m) {
+          <span class="mensaje" role="alert">{{ m }}</span>
+        }
+      </fieldset>
+
+      <p class="ayuda">
+        Las coordenadas son opcionales. Sin ellas la solicitud se registra,
+        pero no se estiman la distancia ni la duración.
+      </p>
+
+      <div class="acciones">
+        <button type="submit" class="boton" [disabled]="enviando()">
+          @if (enviando()) {
+            Guardando…
+          } @else if (esEdicion()) {
+            Guardar cambios
+          } @else {
+            Registrar solicitud
+          }
+        </button>
+
+        <button type="button" class="boton secundario" (click)="cerrar()">
+          @if (esEdicion()) { Cancelar edición } @else { Cerrar }
+        </button>
+      </div>
+
+    </form>
+  }
+
+</section>

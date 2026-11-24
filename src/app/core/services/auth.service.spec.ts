@@ -15,7 +15,7 @@ describe('AuthService - Autenticación API v2', () => {
     let httpMock: HttpTestingController;
 
     const urlOriginal = environment.apiBaseUrl;
-    const apiUrl = 'https://api.test.local';
+    const apiUrl = 'https://api.test.local/track/api/v2';
 
     const credenciales = {
         email: 'usuario@ejemplo.com',
@@ -55,7 +55,7 @@ describe('AuthService - Autenticación API v2', () => {
         });
 
         const req = httpMock.expectOne(
-            `${apiUrl}/api/v2/auth/login`
+            `${apiUrl}/auth/login`
         );
 
         expect(req.request.method).toBe('POST');
@@ -88,7 +88,7 @@ describe('AuthService - Autenticación API v2', () => {
         });
 
         const req = httpMock.expectOne(
-            `${apiUrl}/api/v2/auth/login`
+            `${apiUrl}/auth/login`
         );
 
         req.flush({
@@ -113,7 +113,7 @@ describe('AuthService - Autenticación API v2', () => {
         });
 
         const req = httpMock.expectOne(
-            `${apiUrl}/api/v2/auth/login`
+            `${apiUrl}/auth/login`
         );
 
         req.flush(
@@ -137,7 +137,7 @@ describe('AuthService - Autenticación API v2', () => {
         service.iniciarSesion(credenciales).subscribe();
 
         const req = httpMock.expectOne(
-            `${apiUrl}/api/v2/auth/login`
+            `${apiUrl}/auth/login`
         );
 
         req.flush({

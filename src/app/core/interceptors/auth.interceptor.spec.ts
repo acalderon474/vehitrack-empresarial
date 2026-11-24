@@ -24,7 +24,7 @@ describe('AuthInterceptor - JWT Bearer API v2', () => {
     const urlOriginal = environment.apiBaseUrl;
     const accesoOriginal = environment.accesoDemoAutomatico;
     let intentosLogin = 0;
-    const baseUrl = 'https://api.test.local/track';
+    const baseUrl = 'https://api.test.local/track/api/v2';
 
     beforeEach(() => {
         environment.apiBaseUrl = baseUrl;
@@ -69,7 +69,7 @@ describe('AuthInterceptor - JWT Bearer API v2', () => {
     });
 
     it('debe agregar el token JWT a VT-004', () => {
-        const url = `${baseUrl}/api/v2/enterprise/dashboard/kpis`;
+        const url = `${baseUrl}/enterprise/dashboard/kpis`;
 
         http.get(url).subscribe();
 
@@ -83,7 +83,7 @@ describe('AuthInterceptor - JWT Bearer API v2', () => {
 
     it('debe agregar el token JWT a VT-005', () => {
         const url =
-            `${baseUrl}/api/v2/enterprise/dashboard/financial-summary`;
+            `${baseUrl}/enterprise/dashboard/financial-summary`;
 
         http.get(url).subscribe();
 
@@ -96,7 +96,7 @@ describe('AuthInterceptor - JWT Bearer API v2', () => {
     });
 
     it('no debe agregar token a la petición de login', () => {
-        const url = `${baseUrl}/api/v2/auth/login`;
+        const url = `${baseUrl}/auth/login`;
 
         http.post(url, {}).subscribe();
 
@@ -109,7 +109,7 @@ describe('AuthInterceptor - JWT Bearer API v2', () => {
     });
 
     it('no debe agregar token a la renovación de sesión', () => {
-        const url = `${baseUrl}/api/v2/auth/refresh`;
+        const url = `${baseUrl}/auth/refresh`;
 
         http.post(url, {}).subscribe();
 
@@ -137,7 +137,7 @@ describe('AuthInterceptor - JWT Bearer API v2', () => {
     it('no debe agregar Authorization sin sesión', () => {
         token = null;
 
-        const url = `${baseUrl}/api/v2/enterprise/dashboard/kpis`;
+        const url = `${baseUrl}/enterprise/dashboard/kpis`;
 
         http.get(url).subscribe();
 
@@ -150,7 +150,7 @@ describe('AuthInterceptor - JWT Bearer API v2', () => {
     });
 
     it('debe respetar una cabecera Authorization existente', () => {
-        const url = `${baseUrl}/api/v2/enterprise/dashboard/kpis`;
+        const url = `${baseUrl}/enterprise/dashboard/kpis`;
 
         http.get(url, {
             headers: {
@@ -172,7 +172,7 @@ describe('AuthInterceptor - JWT Bearer API v2', () => {
         environment.accesoDemoAutomatico = true;
 
         const url =
-            `${baseUrl}/api/v2/enterprise/dashboard/kpis`;
+            `${baseUrl}/enterprise/dashboard/kpis`;
 
         http.get(url).subscribe();
 

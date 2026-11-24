@@ -1,6 +1,6 @@
 
 import { Injectable, inject } from '@angular/core';
-import { Observable, map } from 'rxjs';
+import { Observable } from 'rxjs';
 
 import { ApiService } from './api.service';
 import { environment } from '../../../environments/environment';
@@ -12,15 +12,6 @@ import type {
     ResumenFinancieroDashboardDto
 } from '../dto/dashboard.dto';
 
-// Estructura de las respuestas del backend Go.
-interface RespuestaApi<T> {
-    errors: Array<{
-        code: string;
-        message: string;
-    }>;
-    data: T;
-}
-
 @Injectable({
     providedIn: 'root'
 })
@@ -28,12 +19,10 @@ export class DashboardService {
 
     private readonly api = inject(ApiService);
 
-    private readonly rutaDashboard = environment.dashboardApiPath;
+    private readonly rutaDashboard =
+        environment.dashboardApiPath;
 
-    /**
-     * VT-004
-     * Consultar indicadores operativos.
-     */
+    // VT-004: indicadores operativos.
     obtenerIndicadores(
         filtros: FiltrosDashboardDto
     ): Observable<IndicadoresDashboardDto> {
@@ -43,25 +32,18 @@ export class DashboardService {
             hasta: filtros.hasta
         });
 
-        return this.api.get<RespuestaApi<IndicadoresDashboardDto>>(
+        return this.api.get<IndicadoresDashboardDto>(
             `${this.rutaDashboard}/kpis?${parametros.toString()}`
-        ).pipe(
-            map(respuesta => respuesta.data)
         );
     }
 
-    /**
-     * VT-005
-     * Consultar resumen financiero.
-     */
+    // VT-005: resumen financiero.
     obtenerResumenFinanciero(
         periodo: PeriodoFinanciero
     ): Observable<ResumenFinancieroDashboardDto> {
 
-        return this.api.get<RespuestaApi<ResumenFinancieroDashboardDto>>(
+        return this.api.get<ResumenFinancieroDashboardDto>(
             `${this.rutaDashboard}/financial-summary?periodo=${encodeURIComponent(periodo)}`
-        ).pipe(
-            map(respuesta => respuesta.data)
         );
     }
 }

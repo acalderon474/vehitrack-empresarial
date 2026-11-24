@@ -93,7 +93,7 @@ afterEach(() => {
   });
 
 it('consume correctamente los contratos VT-004 y VT-005 de la API v2', async () => {
-  environment.apiBaseUrl = 'https://api.test.local';
+  environment.apiBaseUrl = 'https://api.test.local/track/api/v2';
   environment.modoDemostracion = false;
 
   await TestBed.configureTestingModule({
@@ -111,7 +111,7 @@ it('consume correctamente los contratos VT-004 y VT-005 de la API v2', async () 
   fixture.detectChanges();
 
   const rutaBase =
-    'https://api.test.local/api/v2/enterprise/dashboard';
+    'https://api.test.local/track/api/v2/enterprise/dashboard';
 
   const kpis = http.expectOne(
     `${rutaBase}/kpis?desde=${componente.desde}&hasta=${componente.hasta}`

@@ -24,7 +24,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
         .trim()
         .replace(/\/+$/, '');
 
-    const prefijoApi = `${baseUrl}/api/v2/`;
+    const prefijoApi = `${baseUrl}/`;
 
     const esApiV2 =
         !!baseUrl && req.url.startsWith(prefijoApi);

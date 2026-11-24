@@ -20,9 +20,9 @@ describe('DashboardService - API v2', () => {
     let httpMock: HttpTestingController;
 
     const urlOriginal = environment.apiBaseUrl;
-    const apiUrl = 'https://api.test.local';
+    const apiUrl = 'https://api.test.local/track/api/v2';
     const rutaDashboard =
-        `${apiUrl}/api/v2/enterprise/dashboard`;
+        `${apiUrl}/enterprise/dashboard`;
 
     beforeEach(() => {
         environment.apiBaseUrl = apiUrl;
