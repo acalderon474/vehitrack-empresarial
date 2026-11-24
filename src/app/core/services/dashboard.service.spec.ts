@@ -1,7 +1,6 @@
 
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
-
 import {
     HttpTestingController,
     provideHttpClientTesting
@@ -16,13 +15,14 @@ import type {
     PeriodoFinanciero
 } from '../dto/dashboard.dto';
 
-describe('DashboardService', () => {
-
+describe('DashboardService - API v2', () => {
     let service: DashboardService;
     let httpMock: HttpTestingController;
 
     const urlOriginal = environment.apiBaseUrl;
-    const apiUrl = 'https://api.test.local/api/v1';
+    const apiUrl = 'https://api.test.local/track/api/v2';
+    const rutaDashboard =
+        `${apiUrl}/enterprise/dashboard`;
 
     beforeEach(() => {
         environment.apiBaseUrl = apiUrl;
@@ -49,7 +49,6 @@ describe('DashboardService', () => {
     });
 
     it('debe consultar los indicadores VT-004', () => {
-
         const indicadores: IndicadoresDashboardDto = {
             vehiculos_total: 6,
             vehiculos_disponibles: 4,
@@ -68,18 +67,20 @@ describe('DashboardService', () => {
         });
 
         const req = httpMock.expectOne(
-            `${apiUrl}/enterprise/dashboard/kpis?desde=2026-11-01&hasta=2026-11-30`
+            `${rutaDashboard}/kpis?desde=2026-11-01&hasta=2026-11-30`
         );
 
         expect(req.request.method).toBe('GET');
 
-        req.flush(indicadores);
+        req.flush({
+            errors: [],
+            data: indicadores
+        });
 
         expect(respuesta).toEqual(indicadores);
     });
 
     it('debe consultar el resumen financiero VT-005', () => {
-
         const resumen: ResumenFinancieroDashboardDto = {
             ingreso_total: 650000,
             costo_estimado: 278032,
@@ -88,8 +89,7 @@ describe('DashboardService', () => {
             margen_real: 363000
         };
 
-        let respuesta:
-            ResumenFinancieroDashboardDto | undefined;
+        let respuesta: ResumenFinancieroDashboardDto | undefined;
 
         service.obtenerResumenFinanciero('mes')
             .subscribe(datos => {
@@ -97,18 +97,20 @@ describe('DashboardService', () => {
             });
 
         const req = httpMock.expectOne(
-            `${apiUrl}/enterprise/dashboard/financial-summary?periodo=mes`
+            `${rutaDashboard}/financial-summary?periodo=mes`
         );
 
         expect(req.request.method).toBe('GET');
 
-        req.flush(resumen);
+        req.flush({
+            errors: [],
+            data: resumen
+        });
 
         expect(respuesta).toEqual(resumen);
     });
 
     it('debe admitir los tres períodos financieros', () => {
-
         const periodos: PeriodoFinanciero[] = [
             'semana',
             'mes',
@@ -116,28 +118,29 @@ describe('DashboardService', () => {
         ];
 
         for (const periodo of periodos) {
-
             service.obtenerResumenFinanciero(periodo)
                 .subscribe();
 
             const req = httpMock.expectOne(
-                `${apiUrl}/enterprise/dashboard/financial-summary?periodo=${periodo}`
+                `${rutaDashboard}/financial-summary?periodo=${periodo}`
             );
 
             expect(req.request.method).toBe('GET');
 
             req.flush({
-                ingreso_total: 0,
-                costo_estimado: 0,
-                costo_real: 0,
-                margen_estimado: 0,
-                margen_real: 0
+                errors: [],
+                data: {
+                    ingreso_total: 0,
+                    costo_estimado: 0,
+                    costo_real: 0,
+                    margen_estimado: 0,
+                    margen_real: 0
+                }
             });
         }
     });
 
     it('debe propagar los errores HTTP del backend', () => {
-
         let codigoError: number | undefined;
 
         service.obtenerIndicadores({
@@ -150,11 +153,11 @@ describe('DashboardService', () => {
         });
 
         const req = httpMock.expectOne(
-            `${apiUrl}/enterprise/dashboard/kpis?desde=2026-11-01&hasta=2026-11-30`
+            `${rutaDashboard}/kpis?desde=2026-11-01&hasta=2026-11-30`
         );
 
         req.flush(
-            { mensaje: 'Servicio no disponible' },
+            { errors: [{ code: 'unavailable', message: 'Servicio no disponible' }] },
             {
                 status: 503,
                 statusText: 'Service Unavailable'
@@ -163,5 +166,4 @@ describe('DashboardService', () => {
 
         expect(codigoError).toBe(503);
     });
-
 });

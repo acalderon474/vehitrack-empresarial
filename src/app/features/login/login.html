@@ -1,0 +1,47 @@
+<main class="login-contenedor">
+
+    <section class="login-tarjeta">
+
+        <header class="login-cabecera">
+            <div class="logo">V</div>
+
+            <h1>Vehitrack Empresarial</h1>
+
+            <p>
+                Inicia sesión para acceder al panel
+                de gestión de transporte.
+            </p>
+        </header>
+
+        <form #formulario="ngForm" (ngSubmit)="iniciarSesion()" class="login-formulario">
+
+            <label for="email">Correo electrónico</label>
+
+            <input id="email" name="email" type="email" [(ngModel)]="email" placeholder="usuario@empresa.com"
+                autocomplete="username" required email>
+
+            <label for="password">Contraseña</label>
+
+            <input id="password" name="password" type="password" [(ngModel)]="password"
+                placeholder="Ingresa tu contraseña" autocomplete="current-password" required>
+
+            <label for="tenantId">Identificador de empresa</label>
+
+            <input id="tenantId" name="tenantId" type="text" [(ngModel)]="tenantId" placeholder="UUID de la empresa"
+                autocomplete="off" required>
+
+            @if (error()) {
+            <p class="mensaje-error" role="alert">
+                {{ error() }}
+            </p>
+            }
+
+            <button type="submit" [disabled]="formulario.invalid || cargando()">
+                {{ cargando() ? 'Iniciando sesión…' : 'Iniciar sesión' }}
+            </button>
+
+        </form>
+
+    </section>
+
+</main>

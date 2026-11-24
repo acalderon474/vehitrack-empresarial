@@ -1,0 +1,64 @@
+:host { display: block; color: #22334a; }
+.dashboard { max-width: 1540px; margin: 0 auto; display: grid; gap: 20px; }
+.cabecera { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; flex-wrap: wrap; }
+.sobretitulo { margin: 0 0 5px; font-size: 11px; font-weight: 800; letter-spacing: .09em; color: #5780ad; }
+h2 { font-size: 28px; font-weight: 750; margin: 0; color: #143557; }
+.subtitulo { color: #64748b; font-size: 13px; margin: 7px 0 0; }
+.etiqueta { background: #edf9f1; color: #18794e; font-size: 11px; font-weight: 700; padding: 9px 12px; border-radius: 20px; }
+.etiqueta-demo { background: #e8f0ff; color: #2457a8; }
+.filtros { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; padding: 15px; background: #fff; border: 1px solid #e2e8f0; border-radius: 15px; }
+.filtros label { display: grid; gap: 5px; font-size: 12px; font-weight: 700; color: #405570; }
+.filtros input, .filtros select { min-height: 37px; padding: 7px 10px; border: 1px solid #cbd5e1; background: white; color: #334155; border-radius: 8px; font: inherit; }
+.filtros button { min-height: 37px; padding: 8px 17px; border: none; border-radius: 9px; background: #2563eb; color: white; font-weight: 700; cursor: pointer; }
+.filtros button:disabled { opacity: .6; cursor: wait; }
+.filtros :is(input, select, button):focus-visible { outline: 3px solid #93c5fd; outline-offset: 2px; }
+.contexto { margin: -12px 0 0; color: #64748b; font-size: 12px; }
+.mensaje-error { margin: 0; padding: 12px; color: #a11928; background: #fff0f0; border-radius: 10px; }
+.kpis { display: grid; grid-template-columns: repeat(5, minmax(0,1fr)); gap: 12px; }
+.kpi { background: #eef4fd; border: 1px solid #d6e3f5; border-radius: 14px; padding: 16px 14px; min-height: 112px; display: flex; flex-direction: column; gap: 6px; }
+.kpi span { font-size: 12px; font-weight: 750; }
+.kpi strong { font-size: 31px; color: #143557; line-height: 1.1; }
+.kpi small { color: #667b94; font-size: 11px; }
+.kpi-verde { background: #edf9f2; border-color: #d4ecdc; }
+.kpi-verde strong { color: #16824a; }
+.kpi-azul { background: #eaf1ff; }
+.kpi-amarillo { background: #fff8e8; border-color: #f6e8be; }
+.kpi-gris { background: #f2f5fa; }
+.paneles { display: grid; grid-template-columns: minmax(0,2fr) minmax(245px,1fr); gap: 16px; }
+.paneles.secundarios { grid-template-columns: repeat(2,minmax(0,1fr)); }
+.tarjeta { background: white; border-radius: 16px; padding: 22px; box-shadow: 0 1px 5px #0b37650d; border: 1px solid #e7edf5; min-width: 0; }
+.seccion-titulo { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 18px; }
+.seccion-titulo h3 { color: #183a60; margin: 0; font-size: 17px; }
+.seccion-titulo p { color: #8a9bad; margin: 5px 0 0; font-size: 12px; }
+.indicador-periodo { text-transform: capitalize; font-size: 11px; color: #2563eb; font-weight: 700; background: #eaf1ff; padding: 6px 10px; border-radius: 9px; }
+.cuadricula-finanzas { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 12px; }
+.cuadricula-finanzas article { background: #f4f7fc; padding: 13px; border: 1px solid #e7edf7; border-radius: 10px; display: grid; gap: 8px; }
+.cuadricula-finanzas span { color: #62758d; font-size: 11px; font-weight: 650; }
+.cuadricula-finanzas strong { color: #184a82; font-size: clamp(14px, 1.6vw, 20px); overflow-wrap: anywhere; }
+.cuadricula-finanzas .real { background: #edfbf4; border-color: #c8ebd8; }
+.cuadricula-finanzas .real strong { color: #13804c; }
+.cuadricula-finanzas .variacion-negativa strong { color: #bf3344; }
+.nota { color: #7a8da5; font-size: 11px; line-height: 1.5; margin: 12px 0 0; }
+.medidor { position: relative; width: 170px; height: 170px; border-radius: 50%; margin: 8px auto 20px; background: conic-gradient(#20ad75 0 66.666%, #4b86e8 66.666% 100%); display: grid; place-items: center; }
+.medidor-interior { height: 123px; width: 123px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; flex-direction: column; }
+.medidor-interior strong { font-size: 31px; color: #183a60; }
+.medidor-interior span { font-size: 11px; color: #8194aa; }
+.leyenda { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f1f4f8; font-size: 12px; }
+.leyenda span { display: flex; align-items: center; gap: 7px; }
+.punto { display: inline-block; height: 9px; width: 9px; border-radius: 50%; }
+.verde { background: #20ad75; } .azul { background: #4b86e8; }
+.tabla-responsive { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 12px; }
+th { background: #f4f7fc; color: #7a8ca3; text-align: left; font-weight: 700; font-size: 11px; }
+td, th { padding: 11px 9px; border-bottom: 1px solid #eff2f7; }
+td { color: #40546d; }
+.dato-positivo { color: #13804c; font-weight: 700; white-space: nowrap; }
+.grafico { display: flex; gap: 10px; height: 230px; align-items: flex-end; padding-top: 27px; border-bottom: 1px solid #dce4ee; }
+.columna { flex: 1; min-width: 0; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 6px; }
+.barra { background: linear-gradient(#5f96f8,#2464d6); border-radius: 5px 5px 0 0; width: 55%; max-width: 50px; min-height: 3px; }
+.valor { font-size: 10px; font-weight: 750; color: #294b75; white-space: nowrap; }
+.placa { font-size: 10px; color: #5e7390; white-space: nowrap; }
+.advertencia { font-size: 12px; line-height: 1.6; padding: 13px 16px; border-radius: 11px; background: #eaf2ff; color: #345b8c; border-left: 3px solid #2563eb; }
+@media (max-width: 1150px) { .kpis { grid-template-columns: repeat(3,minmax(0,1fr)); } .paneles, .paneles.secundarios { grid-template-columns: 1fr; } }
+@media (max-width: 650px) { .kpis { grid-template-columns: repeat(2,minmax(0,1fr)); } .cuadricula-finanzas { grid-template-columns: repeat(2,minmax(0,1fr)); } .tarjeta { padding: 14px; } .medidor { width: 150px; height: 150px; } .medidor-interior { width: 110px; height: 110px; } .valor,.placa { font-size: 8px; } }
+@media (max-width: 420px) { .kpis { grid-template-columns: 1fr; } .cuadricula-finanzas { grid-template-columns: 1fr; } }

@@ -3,6 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { ApiService } from './api.service';
+import { environment } from '../../../environments/environment';
 
 import type {
     FiltrosDashboardDto,
@@ -18,11 +19,10 @@ export class DashboardService {
 
     private readonly api = inject(ApiService);
 
-    /**
-     * VT-004
-     * Consultar indicadores operativos
-     * del Dashboard empresarial.
-     */
+    private readonly rutaDashboard =
+        environment.dashboardApiPath;
+
+    // VT-004: indicadores operativos.
     obtenerIndicadores(
         filtros: FiltrosDashboardDto
     ): Observable<IndicadoresDashboardDto> {
@@ -33,21 +33,17 @@ export class DashboardService {
         });
 
         return this.api.get<IndicadoresDashboardDto>(
-            `enterprise/dashboard/kpis?${parametros.toString()}`
+            `${this.rutaDashboard}/kpis?${parametros.toString()}`
         );
     }
 
-    /**
-     * VT-005
-     * Consultar el resumen financiero
-     * del período seleccionado.
-     */
+    // VT-005: resumen financiero.
     obtenerResumenFinanciero(
         periodo: PeriodoFinanciero
     ): Observable<ResumenFinancieroDashboardDto> {
 
         return this.api.get<ResumenFinancieroDashboardDto>(
-            `enterprise/dashboard/financial-summary?periodo=${encodeURIComponent(periodo)}`
+            `${this.rutaDashboard}/financial-summary?periodo=${encodeURIComponent(periodo)}`
         );
     }
 }
